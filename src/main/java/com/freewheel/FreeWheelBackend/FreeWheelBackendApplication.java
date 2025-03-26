@@ -9,5 +9,4 @@ public class FreeWheelBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FreeWheelBackendApplication.class, args);
 	}
-
 }

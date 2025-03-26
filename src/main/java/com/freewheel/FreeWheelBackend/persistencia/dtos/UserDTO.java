@@ -12,6 +12,7 @@ public class UserDTO {
     private String apellido;
     private String correo;
     private String telefono;
+    private String contraseña;  // Añadir este campo si no existe
     private String fotoPerfil;
     private Long organizacionId;
 }
