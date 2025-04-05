@@ -36,15 +36,15 @@ public class SupabaseStorageServiceImpl implements StorageService {
     }
     
     @Override
-    public String uploadFile(MultipartFile file, String fileName) throws IOException {
-        logger.info("Iniciando carga de archivo: {}", fileName);
-        
+    public String uploadFile(MultipartFile file, String fileName, String folderPath) throws IOException {
+        logger.info("Iniciando carga de archivo: {} en carpeta: {}", fileName, folderPath);
+
         // Generate unique filename if none provided
         if (fileName == null || fileName.isEmpty()) {
             fileName = UUID.randomUUID().toString();
             logger.info("Generando nombre de archivo único: {}", fileName);
         }
-        
+
         // Add file extension if it exists
         String originalFilename = file.getOriginalFilename();
         if (originalFilename != null && originalFilename.contains(".")) {
@@ -54,44 +54,55 @@ public class SupabaseStorageServiceImpl implements StorageService {
                 logger.info("Añadiendo extensión al archivo: {}", fileName);
             }
         }
-        
-        logger.info("Preparando para subir archivo al bucket: {}", bucketName);
-        logger.info("URL de Supabase: {}", supabaseUrl);
-        
+
+        // Prepare the folder path (ensure it doesn't start or end with slash)
+        String folder = "";
+        if (folderPath != null && !folderPath.isEmpty()) {
+            folder = folderPath.trim();
+            if (folder.startsWith("/")) {
+                folder = folder.substring(1);
+            }
+            if (!folder.endsWith("/")) {
+                folder = folder + "/";
+            }
+        }
+
+        logger.info("Preparando para subir archivo al bucket: {}, carpeta: {}", bucketName, folder);
+
         // Prepare the request
         RequestBody requestBody = RequestBody.create(file.getBytes(), MediaType.parse(file.getContentType()));
-        
-        String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + fileName;
+
+        String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + folder + fileName;
         logger.info("URL de carga: {}", uploadUrl);
-        
+
         Request request = new Request.Builder()
                 .url(uploadUrl)
                 .put(requestBody)
                 .addHeader("Authorization", "Bearer " + supabaseKey)
                 .addHeader("Content-Type", file.getContentType())
                 .build();
-        
+
         // Execute request
         try (Response response = httpClient.newCall(request).execute()) {
             logger.info("Respuesta recibida, código: {}", response.code());
-            
+
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() : "No body";
                 logger.error("Error al subir archivo: {} - {} - {}", response.code(), response.message(), errorBody);
                 throw new IOException("Failed to upload file: " + response.code() + " - " + response.message() + " - " + errorBody);
             }
-            
+
             String responseBody = response.body() != null ? response.body().string() : null;
             if (responseBody == null) {
                 logger.error("El cuerpo de la respuesta está vacío");
                 throw new IOException("Empty response body");
             }
-            
+
             logger.info("Respuesta de Supabase: {}", responseBody);
-            
+
             JsonNode jsonNode = objectMapper.readTree(responseBody);
-            String publicUrl = supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + fileName;
-            
+            String publicUrl = supabaseUrl + "/storage/v1/object/public/" + bucketName + "/" + folder + fileName;
+
             logger.info("URL pública del archivo: {}", publicUrl);
             return publicUrl;
         } catch (Exception e) {
