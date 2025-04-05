@@ -1,0 +1,181 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Project Overview
+FreeWheel is a mobile application designed for the Android platform to facilitate carpooling, a transportation method that involves sharing a vehicle with people who have similar destinations. It offers a practical and economical solution for daily commuting. The app allows drivers to post their routes and available seats, while passengers can search for and book rides that suit their needs.
+## Features:
+- Driver and passenger matching: Enables users to efficiently find and share rides.
+- Focus on regular routes: Helps drivers earn additional income by offering seats during their daily commutes.
+- Cost estimation per trip: Simplifies payment processes for users based on each journey.
+
+# Personality
+The model is configured to be direct and explanatory. It delivers concise responses that clearly state any changes or actions taken. For every modification, the model provides a brief explanation of the reason and effect, focusing solely on the essential details needed for understanding the adjustment while omitting unnecessary information.
+
+Additionally, every response will begin with the 🤖 emoji.
+
+# Tech Stack
+This project is the backend side of the application. We're using Springboot, with Maven.
+
+# Database
+For the database, currently is being used postgresql in a Supabase database. This is the SQL code of the database:
+
+```sql
+create table usuario (
+  id bigint primary key generated always as identity,
+  nombre text not null,
+  apellido text not null,
+  correo text not null unique,
+  telefono text not null,
+  "contraseña" text not null,
+  foto_perfil text
+);
+
+create table conductor (
+  id bigint primary key generated always as identity,
+  usuario_id bigint not null references usuario (id),
+  licencia_conduccion text not null
+);
+
+create table vehiculo (
+  id bigint primary key generated always as identity,
+  placa text not null unique,
+  marca text not null,
+  modelo text not null,
+  "año" int not null,
+  color text not null,
+  tipo text not null,
+  capacidad_pasajeros int not null,
+  licencia_transito text not null,
+  soat text not null,
+  certificado_revision text not null
+);
+
+create table viaje (
+  id bigint primary key generated always as identity,
+  conductor_id bigint not null references conductor (id),
+  lugar_inicio text not null,
+  lugar_destino text not null,
+  fecha date not null,
+  hora_inicio time not null,
+  hora_fin time not null,
+  precio_asiento numeric(10, 2) not null,
+  numero_asientos_disponibles int not null,
+  estado text not null check (
+    estado in ('iniciado', 'finalizado', 'por iniciar')
+  )
+);
+
+create table pasajero_viaje (
+  id bigint primary key generated always as identity,
+  viaje_id bigint not null references viaje (id),
+  usuario_id bigint not null references usuario (id)
+);
+
+alter table vehiculo
+add column conductor_id bigint references conductor (id);
+
+alter table pasajero_viaje
+add column pago_realizado boolean default false;
+
+create table calificacion_conductor (
+  id bigint primary key generated always as identity,
+  viaje_id bigint not null references viaje (id),
+  pasajero_id bigint not null references usuario (id),
+  conductor_id bigint not null references conductor (id),
+  calificacion int not null check (
+    calificacion >= 1
+    and calificacion <= 5
+  ),
+  comentario text
+);
+
+create table calificacion_pasajero (
+  id bigint primary key generated always as identity,
+  viaje_id bigint not null references viaje (id),
+  conductor_id bigint not null references conductor (id),
+  pasajero_id bigint not null references usuario (id),
+  calificacion int not null check (
+    calificacion >= 1
+    and calificacion <= 5
+  ),
+  comentario text
+);
+
+create table organizacion (
+  id bigint primary key generated always as identity,
+  nombre text not null,
+  codigo text not null unique,
+  direccion text,
+  telefono text
+);
+
+alter table usuario
+add column organizacion_id bigint references organizacion (id);
+
+alter table organizacion
+add column nit text not null unique;
+```
+
+# Current File structure
+.cursor
+│   └───rules
+├───.idea
+├───.mvn
+│   └───wrapper
+├───.vscode
+├───src
+│   ├───main
+│   │   ├───java
+│   │   │   └───com
+│   │   │       └───freewheel
+│   │   │           └───FreeWheelBackend
+│   │   │               ├───config
+│   │   │               ├───controladores
+│   │   │               ├───persistencia
+│   │   │               │   ├───dtos
+│   │   │               │   ├───entidades
+│   │   │               │   └───repositorios
+│   │   │               └───servicios
+│   │   │                   └───impl
+│   │   └───resources
+│   │       ├───static
+│   │       └───templates
+│   └───test
+│       └───java
+│           └───com
+│               └───freewheel
+│                   └───FreeWheelBackend
+└───target
+    ├───classes
+    │   └───com
+    │       └───freewheel
+    │           └───FreeWheelBackend
+    │               ├───config
+    │               ├───controladores
+    │               ├───persistencia
+    │               │   ├───dtos
+    │               │   ├───entidades
+    │               │   └───repositorios
+    │               └───servicios
+    │                   └───impl
+    ├───generated-sources
+    │   └───annotations
+    ├───generated-test-sources
+    │   └───test-annotations
+    └───test-classes
+        └───com
+            └───freewheel
+                └───FreeWheelBackend
+
+# Comments
+- Be brief and precise → Explain what the code does, not how it works.
+- Avoid the obvious → Don’t comment self-explanatory code (i++ // Increments i).
+- Use JSDoc for functions and methods → Describe parameters and return values.
+- Keep comments updated → If the code changes, update the comments.
+- Mark TODOs and FIXMEs → Use // TODO: and // FIXME: for pending tasks.
+- Comment complex logic → Explain algorithms or key decisions.
+- Stick to one language → If the code is in English, keep comments in English too.
+- Don’t overuse comments → Clean code should need minimal commenting.
