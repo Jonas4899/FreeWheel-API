@@ -12,5 +12,6 @@ public interface StorageService {
      * @return the URL to access the file
      * @throws IOException if the file cannot be read
      */
-    String uploadFile(MultipartFile file, String fileName) throws IOException;
+    //String uploadFile(MultipartFile file, String fileName) throws IOException;
+    String uploadFile(MultipartFile file, String fileName, String folderPath) throws IOException;
 } 

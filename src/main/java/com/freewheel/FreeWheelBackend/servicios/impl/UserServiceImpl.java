@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         String fileName = "perfil_" + UUID.randomUUID().toString();
         
         // Upload the file and get its URL
-        String imageUrl = storageService.uploadFile(profileImage, fileName);
+        String imageUrl = storageService.uploadFile(profileImage, fileName, "fotos-perfil");
         
         // Set the profile image URL in the DTO
         userDTO.setFotoPerfil(imageUrl);
