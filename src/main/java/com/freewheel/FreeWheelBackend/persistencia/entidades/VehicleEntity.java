@@ -45,8 +45,9 @@ public class VehicleEntity {
     @Column(name="certificado_revision")
     private String certificadoRevision;
 
-    @Column(name="conductor_id")
-    private long conductorId;
+    @ManyToOne
+    @JoinColumn(name="conductor_id", nullable = false)
+    private DriverEntity conductor;
 
     @Column(name="foto")
     private String foto;

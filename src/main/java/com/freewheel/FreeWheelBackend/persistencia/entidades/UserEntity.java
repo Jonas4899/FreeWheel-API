@@ -38,4 +38,7 @@ public class UserEntity {
     @ManyToOne
     @JoinColumn(name = "organizacion_id", nullable = false)
     private OrganizationEntity organizacion;
+
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private DriverEntity driver;
 }

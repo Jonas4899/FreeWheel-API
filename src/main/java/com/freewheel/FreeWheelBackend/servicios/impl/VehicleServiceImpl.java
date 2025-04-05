@@ -40,7 +40,7 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setLicenciaTransito(vehicleDTO.getLicenciaTransito());
         vehicle.setSoat(vehicleDTO.getSoat());
         vehicle.setCertificadoRevision(vehicleDTO.getCertificadoRevision());
-        vehicle.setConductorId(driver.getId());
+        vehicle.setConductor(driver);
         vehicle.setFoto(vehicleDTO.getFoto());
 
         //Guardar el vehiculo en la BD
@@ -58,7 +58,7 @@ public class VehicleServiceImpl implements VehicleService {
             savedVehicle.getLicenciaTransito(),
             savedVehicle.getSoat(),
             savedVehicle.getCertificadoRevision(),
-            savedVehicle.getConductorId(),
+            savedVehicle.getConductor().getId(),
             savedVehicle.getFoto()
         );
     }

@@ -9,7 +9,6 @@ import com.freewheel.FreeWheelBackend.servicios.DriverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class DriverServiceImpl implements DriverService {
     private final DriverRepository driverRepository;
@@ -30,14 +29,14 @@ public class DriverServiceImpl implements DriverService {
         //Crear el conductor
         DriverEntity driver = new DriverEntity();
         driver.setLicenciaConduccion(driverDTO.getLicenciaConduccion());
-        driver.setUsuarioId(user.getId());
+        driver.setUsuario(user);
 
         //Guardar el conductor en la BD
         DriverEntity savedDriver = driverRepository.save(driver);
 
         return new DriverDTO(
                 savedDriver.getId(),
-                savedDriver.getUsuarioId(),
+                savedDriver.getUsuario().getId(),
                 savedDriver.getLicenciaConduccion()
         );
 

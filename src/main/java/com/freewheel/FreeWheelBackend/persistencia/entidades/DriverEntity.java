@@ -13,8 +13,9 @@ public class DriverEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "usuario_id",unique = true)
-    private long usuarioId;
+    @OneToOne
+    @JoinColumn(name="usuario_id", referencedColumnName = "id")
+    private UserEntity usuario;
 
     @Column(name = "licencia_conduccion")
     private String licenciaConduccion;
