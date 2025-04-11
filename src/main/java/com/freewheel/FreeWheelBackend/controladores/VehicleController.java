@@ -1,8 +1,10 @@
 package com.freewheel.FreeWheelBackend.controladores;
 
 import com.freewheel.FreeWheelBackend.persistencia.dtos.VehicleDTO;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.VehicleEntity;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
 import com.freewheel.FreeWheelBackend.servicios.VehicleService;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/vehiculos")
 public class VehicleController {
     private final VehicleService vehicleService;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     public VehicleController(VehicleService vehicleService) {
@@ -22,9 +25,13 @@ public class VehicleController {
 
     @PostMapping("/registrar")
     public ResponseEntity<VehicleDTO> createVehicle(@RequestBody VehicleDTO vehicleDTO) {
-        VehicleDTO newVehicle = vehicleService.createVehicle(vehicleDTO);
-
-        return new ResponseEntity<>(newVehicle, HttpStatus.CREATED);
+        try {
+            VehicleDTO newVehicle = vehicleService.createVehicle(vehicleDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newVehicle);
+        } catch (Exception e) {
+            System.out.println("Error al crear el vehiculo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PostMapping(value= "/registrar-con-documentos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
