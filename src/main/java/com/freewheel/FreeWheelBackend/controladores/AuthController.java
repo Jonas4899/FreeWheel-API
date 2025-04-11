@@ -35,7 +35,7 @@ public class AuthController {
             @RequestParam("correo") String correo,
             @RequestParam("telefono") String telefono,
             @RequestParam("contraseña") String contraseña,
-            @RequestParam("organizacionId") Long organizacionId,
+            @RequestParam("organizacionCodigo") String organizacionCodigo,
             @RequestParam(value = "profileImage", required = true) MultipartFile profileImage) {
 
         logger.info("Recibida solicitud para crear usuario con imagen de perfil. Email: {}, Nombre de archivo: {}, Tamaño: {}",
@@ -63,7 +63,7 @@ public class AuthController {
                     .correo(correo)
                     .telefono(telefono)
                     .contraseña(contraseña)
-                    .organizacionId(organizacionId)
+                    .organizacionCodigo(organizacionCodigo)
                     .build();
 
             logger.info("DTO de usuario creado, procediendo a guardarlo con la imagen");

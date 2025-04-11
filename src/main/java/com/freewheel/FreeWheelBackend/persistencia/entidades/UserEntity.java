@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuarios") // Asegúrate que la tabla se llame 'usuarios' en tu BD
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,16 +29,13 @@ public class UserEntity {
     @Column(name = "telefono",nullable = false)
     private String telefono;
 
-    @Column(name = "contraseña", nullable = false)
+    @Column(name = "contraseña", nullable = false) // Considera renombrar a 'password' o 'hash_contrasena'
     private String contraseña;
 
     @Column(name = "foto_perfil")
     private String fotoPerfil;
 
-    @ManyToOne
-    @JoinColumn(name = "organizacion_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) // Usar LAZY es generalmente buena práctica
+    @JoinColumn(name = "organizacion_id", nullable = false) // Asegúrate que la FK se llame 'organizacion_id'
     private OrganizationEntity organizacion;
-
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private DriverEntity driver;
 }

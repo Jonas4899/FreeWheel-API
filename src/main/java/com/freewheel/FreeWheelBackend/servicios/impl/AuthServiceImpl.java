@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
                 .correo(usuario.getCorreo())
                 .telefono(usuario.getTelefono())
                 .fotoPerfil(usuario.getFotoPerfil())
-                .organizacionId(usuario.getOrganizacion().getId())
+                .organizacionCodigo(usuario.getOrganizacion().getCodigo())
                 .build();
 
         String token = jwtUtils.generateToken(userDTO);
