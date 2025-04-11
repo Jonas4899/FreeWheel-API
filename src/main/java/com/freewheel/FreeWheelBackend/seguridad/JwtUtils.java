@@ -4,6 +4,7 @@ import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.security.Keys;
@@ -24,7 +25,9 @@ public class JwtUtils {
     private Long jwtExpiration;
 
     private Key getSigningKey() { //Convierte la secret en una clave segura de tipo Key para firmar los JWTs
-        return Keys.hmacShaKeyFor(secret.getBytes());
+       //return Keys.hmacShaKeyFor(secret.getBytes());
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     //Generar el token
@@ -34,7 +37,7 @@ public class JwtUtils {
         claims.put("nombre", userDTO.getNombre());
         claims.put("correo", userDTO.getCorreo());
 
-        return createToken(claims, userDTO.getApellido());
+        return createToken(claims, userDTO.getCorreo());
     }
 
     //Construir el token:
@@ -44,7 +47,7 @@ public class JwtUtils {
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
@@ -54,7 +57,7 @@ public class JwtUtils {
     }
 
     public String extractEmail(String token) {
-        return extractClaim(token, (claims -> claims.getSubject()));
+        return extractClaim(token, (claims -> claims.get("correo", String.class)));
     }
 
     public Date extractExpiration(String token) {
@@ -77,5 +80,4 @@ public class JwtUtils {
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
 }

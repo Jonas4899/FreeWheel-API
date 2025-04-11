@@ -49,6 +49,8 @@ public class UserController {
      * @param profileImage User's profile image file (must be an image)
      * @return The created user with ID
      */
+
+
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> createUserWithImage(
             @RequestParam("nombre") String nombre,
