@@ -25,10 +25,10 @@ public class UserServiceImpl implements UserService {
     private final StorageService storageService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, 
-                          OrganizationRepository organizationRepository, 
-                          BCryptPasswordEncoder passwordEncoder,
-                          StorageService storageService) {
+    public UserServiceImpl(UserRepository userRepository,
+                           OrganizationRepository organizationRepository,
+                           BCryptPasswordEncoder passwordEncoder,
+                           StorageService storageService) {
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
         this.passwordEncoder = passwordEncoder;
@@ -40,44 +40,46 @@ public class UserServiceImpl implements UserService {
     public UserDTO createUser(UserDTO userDTO) {
         // Validar que el correo no esté registrado
         if (userRepository.findByCorreo(userDTO.getCorreo()).isPresent()) {
+            // Considera lanzar una excepción más específica, ej: CorreoYaRegistradoException
             throw new RuntimeException("El correo ya está registrado");
         }
 
-        // Buscar la organización
-        OrganizationEntity organizacion = organizationRepository.findById(userDTO.getOrganizacionId())
-                .orElseThrow(() -> new RuntimeException("Organización no encontrada"));
+        // Buscar la organización por código
+        OrganizationEntity organizacion = organizationRepository.findByCodigo(userDTO.getOrganizacionCodigo())
+                .orElseThrow(() -> new RuntimeException("Organización no encontrada")); // Esta excepción fue la que te salió antes
 
         final UserEntity userEntity = userDtoToUserEntity(userDTO);
-        userEntity.setOrganizacion(organizacion);
+        userEntity.setOrganizacion(organizacion); // Asegúrate de asignar la organización encontrada
 
         final UserEntity savedUserEntity = userRepository.save(userEntity);
 
         return userEntityToUserDto(savedUserEntity);
     }
-    
+
     @Override
     @Transactional
     public UserDTO createUserWithProfileImage(UserDTO userDTO, MultipartFile profileImage) throws IOException {
         // Validar que el correo no esté registrado
         if (userRepository.findByCorreo(userDTO.getCorreo()).isPresent()) {
+            // Considera lanzar una excepción más específica
             throw new RuntimeException("El correo ya está registrado");
         }
 
-        // Buscar la organización
-        OrganizationEntity organizacion = organizationRepository.findById(userDTO.getOrganizacionId())
+        // Buscar la organización por código
+        OrganizationEntity organizacion = organizationRepository.findByCodigo(userDTO.getOrganizacionCodigo())
                 .orElseThrow(() -> new RuntimeException("Organización no encontrada"));
 
         // Generate a unique filename for the profile image
         String fileName = "perfil_" + UUID.randomUUID().toString();
-        
+
         // Upload the file and get its URL
         String imageUrl = storageService.uploadFile(profileImage, fileName, "fotos-perfil");
-        
-        // Set the profile image URL in the DTO
+
+        // Set the profile image URL in the DTO before conversion
         userDTO.setFotoPerfil(imageUrl);
-        
+
         final UserEntity userEntity = userDtoToUserEntity(userDTO);
-        userEntity.setOrganizacion(organizacion);
+        userEntity.setOrganizacion(organizacion); // Asigna la organización
 
         final UserEntity savedUserEntity = userRepository.save(userEntity);
 
@@ -85,6 +87,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity userDtoToUserEntity(UserDTO userDTO) {
+        // Ya no necesitas buscar la organización aquí si la pasas como parámetro
+        // o si la asignas después de crear el builder como en createUser()
         return UserEntity.builder()
                 .nombre(userDTO.getNombre())
                 .apellido(userDTO.getApellido())
@@ -92,8 +96,9 @@ public class UserServiceImpl implements UserService {
                 .telefono(userDTO.getTelefono())
                 .contraseña(passwordEncoder.encode(userDTO.getContraseña())) // Encriptar la contraseña
                 .fotoPerfil(userDTO.getFotoPerfil())
-                .organizacion(organizationRepository.findById(userDTO.getOrganizacionId())
-                        .orElseThrow(() -> new RuntimeException("Organización no encontrada")))
+                // La organización se asigna fuera de este método ahora en createUser/createUserWithImage
+                // .organizacion(organizationRepository.findByCodigo(userDTO.getOrganizacionCodigo())
+                //        .orElseThrow(() -> new RuntimeException("Organización no encontrada")))
                 .build();
     }
 
@@ -107,7 +112,8 @@ public class UserServiceImpl implements UserService {
                 // Por seguridad, normalmente no se devuelve la contraseña
                 // .contraseña(userEntity.getContraseña())
                 .fotoPerfil(userEntity.getFotoPerfil())
-                .organizacionId(userEntity.getOrganizacion().getId())
+                // Asegúrate de que la organización no sea null antes de acceder a getCodigo()
+                .organizacionCodigo(userEntity.getOrganizacion() != null ? userEntity.getOrganizacion().getCodigo() : null)
                 .build();
     }
 }

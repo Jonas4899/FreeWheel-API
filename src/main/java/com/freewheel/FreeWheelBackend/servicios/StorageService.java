@@ -14,4 +14,4 @@ public interface StorageService {
      */
     //String uploadFile(MultipartFile file, String fileName) throws IOException;
     String uploadFile(MultipartFile file, String fileName, String folderPath) throws IOException;
-} 
+}

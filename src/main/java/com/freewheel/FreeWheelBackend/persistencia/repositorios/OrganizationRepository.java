@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface OrganizationRepository extends JpaRepository<OrganizationEntity, Long> {
     Optional<OrganizationEntity> findByNit(String nit);
+    // Busca por el campo 'codigo' de la entidad OrganizationEntity
+    Optional<OrganizationEntity> findByCodigo(String codigo);
 }

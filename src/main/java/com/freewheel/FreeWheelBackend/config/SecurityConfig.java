@@ -1,23 +1,19 @@
 package com.freewheel.FreeWheelBackend.config;
 
-import com.freewheel.FreeWheelBackend.seguridad.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; // Puede ser necesaria
+import org.springframework.security.config.http.SessionCreationPolicy; // Para APIs REST stateless
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity // Habilita la seguridad web de Spring
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-    
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -26,17 +22,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Deshabilita CSRF, común para APIs REST stateless
                 .csrf(csrf -> csrf.disable())
+                // Configura autorización de peticiones
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Permitir acceso sin autenticación a las rutas de autenticación
-                        .anyRequest().authenticated() // Requerir autenticación para cualquier otra ruta
+                        // Permite todas las peticiones a /usuarios/** (ajusta según necesites)
+                        .requestMatchers("/usuarios/**").permitAll()
+                        // Permite todas las peticiones a /viajes/** (ajusta según necesites)
+                        .requestMatchers("/viajes/**").permitAll()
+                        // Cualquier otra petición requiere autenticación (si tuvieras login)
+                        .anyRequest().authenticated() // O .permitAll() si todo es público por ahora
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No mantener estado de sesión
-                );
-
-        // Añadir el filtro de autenticación JWT antes del filtro de autenticación de usuario y contraseña
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // Configura manejo de sesiones como stateless (común para APIs REST)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        // Podrías añadir configuración de JWT, CORS, etc., aquí si lo necesitas
 
         return http.build();
     }

@@ -15,18 +15,18 @@ import java.util.UUID;
 
 @Service
 public class SupabaseStorageServiceImpl implements StorageService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(SupabaseStorageServiceImpl.class);
 
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
-    
+
     @Value("${supabase.url}")
     private String supabaseUrl;
-    
+
     @Value("${supabase.anon.key}")
     private String supabaseKey;
-    
+
     @Value("${supabase.storage.bucket}")
     private String bucketName;
 
@@ -34,7 +34,7 @@ public class SupabaseStorageServiceImpl implements StorageService {
         this.httpClient = new OkHttpClient();
         this.objectMapper = new ObjectMapper();
     }
-    
+
     @Override
     public String uploadFile(MultipartFile file, String fileName, String folderPath) throws IOException {
         logger.info("Iniciando carga de archivo: {} en carpeta: {}", fileName, folderPath);
@@ -110,4 +110,4 @@ public class SupabaseStorageServiceImpl implements StorageService {
             throw e;
         }
     }
-} 
+}

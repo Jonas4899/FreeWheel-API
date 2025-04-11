@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "organizaciones")
+@Table(name = "organizaciones") // Asegúrate que la tabla se llame 'organizaciones'
 public class OrganizationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +17,8 @@ public class OrganizationEntity {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
-    @Column(name = "codigo",unique = true)
+    // Este es el campo importante para la búsqueda por código
+    @Column(name = "codigo", unique = true) // Mapea a la columna 'codigo' que debe ser única
     private String codigo;
 
     @Column(name = "direccion")

@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
-    
+
     /**
      * Create a user with profile image
      * @param userDTO the user data
