@@ -1,6 +1,11 @@
 ---
 description: 
 globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
 alwaysApply: true
 ---
 
@@ -117,6 +122,19 @@ add column organizacion_id bigint references organizacion (id);
 
 alter table organizacion
 add column nit text not null unique;
+
+CREATE TABLE solicitud_reserva (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  viaje_id BIGINT NOT NULL REFERENCES viajes(id),          -- El viaje para el que se solicita la reserva
+  pasajero_id BIGINT NOT NULL REFERENCES usuarios(id),      -- El usuario (pasajero) que hace la solicitud
+  fecha_solicitud TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL, -- Cuándo se hizo la solicitud
+  estado TEXT NOT NULL CHECK (estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada_pasajero')), -- Estado de la solicitud
+  fecha_respuesta TIMESTAMP WITH TIME ZONE,                -- Opcional: Cuándo respondió el conductor
+  mensaje_pasajero TEXT,                                  -- Opcional: Mensaje del pasajero al solicitar
+  mensaje_conductor TEXT,                                 -- Opcional: Mensaje del conductor al responder (ej. motivo rechazo)
+  -- Constraint para evitar que un pasajero solicite varias veces el mismo viaje si aún está pendiente o aceptado? (Opcional, depende de lógica de negocio)
+  UNIQUE (viaje_id, pasajero_id) -- Asegura que un pasajero solo pueda tener una solicitud activa/aceptada por viaje. Ajustar según reglas.
+);
 ```
 
 # Current File structure

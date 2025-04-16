@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Permite todas las peticiones a /usuarios/** (ajusta según necesites)
                         .requestMatchers("/usuarios/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/vehiculos/**").permitAll()
                         // Permite todas las peticiones a /viajes/** (ajusta según necesites)
                         .requestMatchers("/viajes/**").permitAll()
                         // Cualquier otra petición requiere autenticación (si tuvieras login)

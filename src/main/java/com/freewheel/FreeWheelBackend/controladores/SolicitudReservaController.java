@@ -1,0 +1,51 @@
+package com.freewheel.FreeWheelBackend.controladores;
+
+import com.freewheel.FreeWheelBackend.persistencia.dtos.SolicitudReservaDTO;
+import com.freewheel.FreeWheelBackend.servicios.SolicitudReservaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.List;
+
+@RestController
+@RequestMapping("/solicitudes-reserva")
+public class SolicitudReservaController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SolicitudReservaController.class);
+    private final SolicitudReservaService solicitudReservaService;
+
+    @Autowired
+    public SolicitudReservaController(SolicitudReservaService solicitudReservaService) {
+        this.solicitudReservaService = solicitudReservaService;
+    }
+
+    /**
+     * Obtiene el historial de solicitudes de reserva para un conductor específico
+     * @param conductorId ID del conductor
+     * @return Lista de solicitudes de reserva asociadas a los viajes del conductor
+     */
+    @GetMapping("/conductor/{conductorId}")
+    public ResponseEntity<List<SolicitudReservaDTO>> obtenerHistorialSolicitudesConductor(@PathVariable Long conductorId) {
+        logger.info("Recibida solicitud para obtener historial de solicitudes del conductor con ID: {}", conductorId);
+        
+        try {
+            if (conductorId == null || conductorId <= 0) {
+                logger.warn("ID de conductor inválido: {}", conductorId);
+                return ResponseEntity.badRequest().body(Collections.emptyList());
+            }
+            
+            List<SolicitudReservaDTO> solicitudes = solicitudReservaService.obtenerHistorialSolicitudesConductor(conductorId);
+            logger.info("Solicitud procesada con éxito. Se encontraron {} solicitudes para el conductor {}", solicitudes.size(), conductorId);
+            return ResponseEntity.ok(solicitudes);
+            
+        } catch (Exception e) {
+            logger.error("Error al obtener historial de solicitudes para el conductor {}: {}", conductorId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+}
