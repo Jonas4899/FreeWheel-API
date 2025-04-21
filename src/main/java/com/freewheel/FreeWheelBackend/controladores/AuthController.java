@@ -28,6 +28,20 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO createdUser = userService.createUser(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (Exception e) {
+            logger.error("Error al crear usuario: ", e);
+            // Considera devolver un ResponseEntity de error más específico
+            // en lugar de relanzar la excepción directamente si quieres
+            // manejarlo de forma centralizada con @ControllerAdvice
+            throw e;
+        }
+    }
+
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> createUserWithImage(
             @RequestParam("nombre") String nombre,
