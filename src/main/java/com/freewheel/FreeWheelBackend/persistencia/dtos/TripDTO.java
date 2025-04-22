@@ -36,4 +36,19 @@ public class TripDTO {
     private double longitudDestino;
 
     private String estado;
+
+    // Información del conductor para la interfaz
+    private String nombreConductor;
+    private String apellidoConductor;
+    private String fotoConductor;
+    private String telefonoConductor;
+    private Double calificacionConductor; // Promedio de calificaciones
+
+    // Información del vehículo para la interfaz
+    private String vehiculoPlaca;
+    private String vehiculoMarca;
+    private String vehiculoModelo;
+    private String vehiculoColor;
+    private String vehiculoTipo;
+    private String vehiculoFoto;
 }
