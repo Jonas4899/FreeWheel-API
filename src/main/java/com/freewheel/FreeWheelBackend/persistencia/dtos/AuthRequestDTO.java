@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthRequestDTO {
     private String correo;
-    private String contraseña;
+    private String password;
 }

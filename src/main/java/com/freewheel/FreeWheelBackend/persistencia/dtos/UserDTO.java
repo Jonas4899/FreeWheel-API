@@ -12,7 +12,7 @@ public class UserDTO {
     private String apellido;
     private String correo;
     private String telefono;
-    private String contraseña; // Considera llamar a este campo 'password' o similar en el DTO y no devolverlo en las respuestas
+    private String password; // Cambiado de 'contraseña' a 'password'
     private String fotoPerfil;
     private String organizacionCodigo; // Este es el campo que viene en el JSON como 'organizacionId' según tu request anterior, asegúrate que el mapeo sea correcto o renombra el campo JSON
 }

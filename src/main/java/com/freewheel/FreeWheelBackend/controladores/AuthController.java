@@ -48,7 +48,7 @@ public class AuthController {
             @RequestParam("apellido") String apellido,
             @RequestParam("correo") String correo,
             @RequestParam("telefono") String telefono,
-            @RequestParam("contraseña") String contraseña,
+            @RequestParam("password") String password,
             @RequestParam("organizacionCodigo") String organizacionCodigo,
             @RequestParam(value = "profileImage", required = true) MultipartFile profileImage) {
 
@@ -76,7 +76,7 @@ public class AuthController {
                     .apellido(apellido)
                     .correo(correo)
                     .telefono(telefono)
-                    .contraseña(contraseña)
+                    .password(password)
                     .organizacionCodigo(organizacionCodigo)
                     .build();
 

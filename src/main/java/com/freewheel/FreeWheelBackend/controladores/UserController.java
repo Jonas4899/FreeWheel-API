@@ -47,7 +47,7 @@ public class UserController {
      * @param apellido User's last name
      * @param correo User's email
      * @param telefono User's phone number
-     * @param contraseña User's password
+     * @param password User's password
      * @param organizacionCodigo User's organization code
      * @param profileImage User's profile image file (must be an image)
      * @return The created user with ID
@@ -58,7 +58,7 @@ public class UserController {
             @RequestParam("apellido") String apellido,
             @RequestParam("correo") String correo,
             @RequestParam("telefono") String telefono,
-            @RequestParam("contraseña") String contraseña,
+            @RequestParam("password") String password,
             @RequestParam("organizacionCodigo") String organizacionCodigo,
             @RequestParam(value = "profileImage", required = true) MultipartFile profileImage) {
 
@@ -86,7 +86,7 @@ public class UserController {
                     .apellido(apellido)
                     .correo(correo)
                     .telefono(telefono)
-                    .contraseña(contraseña)
+                    .password(password)
                     .organizacionCodigo(organizacionCodigo)
                     .build();
 

@@ -29,8 +29,8 @@ public class UserEntity {
     @Column(name = "telefono",nullable = false)
     private String telefono;
 
-    @Column(name = "contraseña", nullable = false) // Considera renombrar a 'password' o 'hash_contrasena'
-    private String contraseña;
+    @Column(name = "password", nullable = false) // Cambiado de 'contraseña' a 'password'
+    private String password;
 
     @Column(name = "foto_perfil")
     private String fotoPerfil;

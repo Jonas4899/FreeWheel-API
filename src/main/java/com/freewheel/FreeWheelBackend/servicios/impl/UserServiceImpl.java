@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
                 .apellido(userDTO.getApellido())
                 .correo(userDTO.getCorreo())
                 .telefono(userDTO.getTelefono())
-                .contraseña(passwordEncoder.encode(userDTO.getContraseña())) // Encriptar la contraseña
+                .password(passwordEncoder.encode(userDTO.getPassword())) // Cambiado contraseña por password
                 .fotoPerfil(userDTO.getFotoPerfil())
                 // La organización se asigna fuera de este método ahora en createUser/createUserWithImage
                 // .organizacion(organizationRepository.findByCodigo(userDTO.getOrganizacionCodigo())
@@ -110,7 +110,7 @@ public class UserServiceImpl implements UserService {
                 .correo(userEntity.getCorreo())
                 .telefono(userEntity.getTelefono())
                 // Por seguridad, normalmente no se devuelve la contraseña
-                // .contraseña(userEntity.getContraseña())
+                // .password(userEntity.getPassword())
                 .fotoPerfil(userEntity.getFotoPerfil())
                 // Asegúrate de que la organización no sea null antes de acceder a getCodigo()
                 .organizacionCodigo(userEntity.getOrganizacion() != null ? userEntity.getOrganizacion().getCodigo() : null)

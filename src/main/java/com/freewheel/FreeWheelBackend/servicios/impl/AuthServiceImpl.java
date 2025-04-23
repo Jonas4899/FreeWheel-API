@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
         UserEntity usuario = userRepository.findByCorreo(authRequest.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (!passwordEncoder.matches(authRequest.getContraseña(), usuario.getContraseña())) {
+        if (!passwordEncoder.matches(authRequest.getPassword(), usuario.getPassword())) {
             throw new BadCredentialsException("Credenciales incorrectas");
         }
 
