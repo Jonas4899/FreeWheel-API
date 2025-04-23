@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,7 +23,7 @@ public class DriverServiceImpl implements DriverService {
     private final StorageService storageService;
 
     @Autowired
-    public DriverServiceImpl(DriverRepository driverRepository,UserRepository userRepository, StorageService storageService) {
+    public DriverServiceImpl(DriverRepository driverRepository, UserRepository userRepository, StorageService storageService) {
         this.driverRepository = driverRepository;
         this.userRepository = userRepository;
         this.storageService = storageService;
@@ -30,40 +31,58 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverDTO createDriver(DriverDTO driverDTO) {
-        //Obtener el usuario
+        // Verificar si el usuario ya está registrado como conductor
+        Optional<DriverEntity> existingDriver = driverRepository.findByUsuario_Id(driverDTO.getUsuarioId());
+        if (existingDriver.isPresent()) {
+            throw new RuntimeException("El usuario ya está registrado como conductor");
+        }
+
+        // Obtener el usuario
         UserEntity user = userRepository.findById(driverDTO.getUsuarioId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        //Crear el conductor
+        // Crear el conductor
         DriverEntity savedDriver = DriverEntity.builder()
                 .usuario(user)
-                .licenciaConduccion(driverDTO.getLicenciaConduccion())
+                .licenciaConduccionFrontal(driverDTO.getLicenciaConduccionFrontal())
+                .licenciaConduccionTrasera(driverDTO.getLicenciaConduccionTrasera())
                 .build();
-        //Guardar el conductor en la BD
+
+        // Guardar el conductor en la BD
         savedDriver = driverRepository.save(savedDriver);
 
         return DriverDTO.builder()
                 .id(savedDriver.getId())
                 .usuarioId(savedDriver.getUsuario().getId())
-                .licenciaConduccion(savedDriver.getLicenciaConduccion())
+                .licenciaConduccionFrontal(savedDriver.getLicenciaConduccionFrontal())
+                .licenciaConduccionTrasera(savedDriver.getLicenciaConduccionTrasera())
                 .build();
-
     }
 
     @Override
     @Transactional
-    public DriverDTO createDriverWithLicencia(DriverDTO driverDTO, MultipartFile licenciaConduccion) {
+    public DriverDTO createDriverWithLicencia(DriverDTO driverDTO, MultipartFile licenciaFrontal, MultipartFile licenciaTrasera) {
+        // Verificar si el usuario ya está registrado como conductor
+        Optional<DriverEntity> existingDriver = driverRepository.findByUsuario_Id(driverDTO.getUsuarioId());
+        if (existingDriver.isPresent()) {
+            throw new RuntimeException("El usuario ya está registrado como conductor");
+        }
+
         // Obtener el usuario
         UserEntity user = userRepository.findById(driverDTO.getUsuarioId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         try {
-            String licenciaConduccionFileName = "licenciaConduccion_" + driverDTO.getLicenciaConduccion() + "_" + UUID.randomUUID().toString();
-            String licenciaConduccionUrl = storageService.uploadFile(licenciaConduccion, licenciaConduccionFileName, "licencias-conduccion");
+            String licenciaFrontalFileName = "licenciaFrontal_" + UUID.randomUUID().toString();
+            String licenciaTraseraFileName = "licenciaTrasera_" + UUID.randomUUID().toString();
+
+            String licenciaFrontalUrl = storageService.uploadFile(licenciaFrontal, licenciaFrontalFileName, "licencias-conduccion");
+            String licenciaTraseraUrl = storageService.uploadFile(licenciaTrasera, licenciaTraseraFileName, "licencias-conduccion");
 
             DriverEntity savedDriver = DriverEntity.builder()
                     .usuario(user)
-                    .licenciaConduccion(licenciaConduccionUrl)
+                    .licenciaConduccionFrontal(licenciaFrontalUrl)
+                    .licenciaConduccionTrasera(licenciaTraseraUrl)
                     .build();
 
             savedDriver = driverRepository.save(savedDriver);
@@ -71,7 +90,8 @@ public class DriverServiceImpl implements DriverService {
             return DriverDTO.builder()
                     .id(savedDriver.getId())
                     .usuarioId(savedDriver.getUsuario().getId())
-                    .licenciaConduccion(savedDriver.getLicenciaConduccion())
+                    .licenciaConduccionFrontal(savedDriver.getLicenciaConduccionFrontal())
+                    .licenciaConduccionTrasera(savedDriver.getLicenciaConduccionTrasera())
                     .build();
 
         } catch (IOException e) {
