@@ -17,8 +17,11 @@ public class DriverEntity {
     @JoinColumn(name="usuario_id", referencedColumnName = "id")
     private UserEntity usuario;
 
-    @Column(name = "licencia_conduccion")
-    private String licenciaConduccion;
+    @Column(name = "licencia_conduccion_frontal")
+    private String licenciaConduccionFrontal;
+
+    @Column(name="licencia_conduccion_trasera")
+    private String licenciaConduccionTrasera;
 }
 
 

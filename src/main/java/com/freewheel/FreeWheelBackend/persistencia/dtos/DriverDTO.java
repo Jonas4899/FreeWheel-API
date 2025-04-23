@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class DriverDTO {
     private Long id;
     private long usuarioId;
-    private String licenciaConduccion;
+    private String licenciaConduccionFrontal;
+    private String licenciaConduccionTrasera;
 }
