@@ -50,22 +50,24 @@ public class VehicleController {
             @RequestParam("foto") MultipartFile foto) {
 
         try {
-            //validar archivos
+            //validar que los archivos no estén vacíos
             if (licenciaTransito.isEmpty() || soat.isEmpty() || certificadoRevision.isEmpty() || foto.isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Validar que los documentos sean PDF
-            if (!isPdfFile(licenciaTransito)) {
+            // Validar que licenciaTransito sea una imagen (CAMBIO AQUÍ)
+            if (!isImageFile(licenciaTransito)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(VehicleDTO.builder().build());
             }
 
+            // Validar que soat sea PDF
             if (!isPdfFile(soat)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(VehicleDTO.builder().build());
             }
 
+            // Validar que certificadoRevision sea PDF
             if (!isPdfFile(certificadoRevision)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(VehicleDTO.builder().build());

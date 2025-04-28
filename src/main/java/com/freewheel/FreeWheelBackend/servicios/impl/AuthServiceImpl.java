@@ -3,6 +3,7 @@ import com.freewheel.FreeWheelBackend.persistencia.dtos.AuthRequestDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.AuthResponseDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.UserEntity;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.DriverRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
 import com.freewheel.FreeWheelBackend.seguridad.JwtUtils;
 import com.freewheel.FreeWheelBackend.servicios.AuthService;
@@ -18,10 +19,11 @@ public class AuthServiceImpl implements AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private DriverRepository driverRepository;
 
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private JwtUtils jwtUtils;
+
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
@@ -34,6 +36,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Credenciales incorrectas");
         }
 
+        boolean isDriver = driverRepository.findByUsuario_Id(usuario.getId()).isPresent();
+
         UserDTO userDTO = UserDTO.builder()
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
@@ -42,6 +46,7 @@ public class AuthServiceImpl implements AuthService {
                 .telefono(usuario.getTelefono())
                 .fotoPerfil(usuario.getFotoPerfil())
                 .organizacionCodigo(usuario.getOrganizacion().getCodigo())
+                .isDriver(isDriver)
                 .build();
 
         String token = jwtUtils.generateToken(userDTO);
