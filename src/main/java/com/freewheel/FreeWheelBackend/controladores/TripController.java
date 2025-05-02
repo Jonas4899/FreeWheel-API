@@ -44,8 +44,8 @@ public class TripController {
      * @param criteria Objeto que mapea los parámetros de la query (?param1=val1&...)
      * @return ResponseEntity con la lista de TripDTO encontrados o un error.
      */
-    @GetMapping("/buscar")
-    public ResponseEntity<List<TripDTO>> buscarViajesDisponibles(@ModelAttribute TripSearchCriteriaDTO criteria) {
+    @PostMapping("/buscar")
+    public ResponseEntity<List<TripDTO>> buscarViajesDisponibles(@RequestBody TripSearchCriteriaDTO criteria) {
         logger.info("Recibida solicitud de búsqueda de viajes con criterios: {}", criteria);
         try {
             // Validaciones básicas de criterios si son necesarias aquí
