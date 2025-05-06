@@ -16,4 +16,5 @@ public class UserDTO {
     private String fotoPerfil;
     private String organizacionCodigo;
     private boolean isDriver;// Este es el campo que viene en el JSON como 'organizacionId' según tu request anterior, asegúrate que el mapeo sea correcto o renombra el campo JSON
+    private Long conductorId;
 }
