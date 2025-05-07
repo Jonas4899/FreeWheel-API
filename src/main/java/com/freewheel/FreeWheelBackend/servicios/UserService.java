@@ -16,4 +16,11 @@ public interface UserService {
      * @throws IOException if the image cannot be uploaded
      */
     UserDTO createUserWithProfileImage(UserDTO userDTO, MultipartFile profileImage) throws IOException;
+    
+    /**
+     * Get user by ID
+     * @param id the user ID
+     * @return the user data if found, null otherwise
+     */
+    UserDTO getUserById(long id);
 }
