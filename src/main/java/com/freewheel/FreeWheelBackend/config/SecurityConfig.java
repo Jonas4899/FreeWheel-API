@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/vehiculos/**").permitAll()
                         .requestMatchers("/viajes/**").permitAll()
+                        .requestMatchers("/conductores/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

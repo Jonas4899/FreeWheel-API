@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -101,5 +102,29 @@ public class DriverServiceImpl implements DriverService {
         } catch (Exception e) {
             throw new RuntimeException("Error inesperado al crear conductor: " + e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional // Opcional, dependiendo si necesitas transaccionalidad aquí
+    public UserDTO getUserByDriverId(Long driverId) {
+        Optional<DriverEntity> driverEntityOptional = driverRepository.findById(driverId);
+        if (driverEntityOptional.isPresent()) {
+            DriverEntity driverEntity = driverEntityOptional.get();
+            UserEntity userEntity = driverEntity.getUsuario();
+            if (userEntity != null) {
+                // Mapear UserEntity a UserDTO
+                // Esta lógica de mapeo podría estar en un método helper o directamente aquí
+                return UserDTO.builder()
+                        .id(userEntity.getId())
+                        .nombre(userEntity.getNombre())
+                        .apellido(userEntity.getApellido())
+                        .correo(userEntity.getCorreo())
+                        .telefono(userEntity.getTelefono())
+                        .fotoPerfil(userEntity.getFotoPerfil())
+                        .organizacionCodigo(userEntity.getOrganizacion() != null ? userEntity.getOrganizacion().getCodigo() : null)
+                        .build();
+            }
+        }
+        return null;
     }
 }
