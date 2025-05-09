@@ -1,6 +1,7 @@
 package com.freewheel.FreeWheelBackend.controladores;
 
 import com.freewheel.FreeWheelBackend.persistencia.dtos.DriverDTO;
+import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
 import com.freewheel.FreeWheelBackend.servicios.DriverService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,23 @@ public class DriverController {
         } catch (Exception e) {
             logger.error("Error inesperado al crear conductor: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserInfoByDriverId(@PathVariable Long id) {
+        logger.info("Solicitud para obtener información del usuario para el conductor con ID: {}", id);
+        try {
+            UserDTO userDTO = driverService.getUserByDriverId(id);
+            if (userDTO != null) {
+                return ResponseEntity.ok(userDTO);
+            } else {
+                logger.warn("No se encontró información del usuario para el conductor con ID: {}", id);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("Error al obtener información del usuario para el conductor con ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

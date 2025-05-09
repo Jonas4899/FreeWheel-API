@@ -12,9 +12,9 @@ public class UserDTO {
     private String apellido;
     private String correo;
     private String telefono;
-    private String password; // Cambiado de 'contraseña' a 'password'
+    private String password;
     private String fotoPerfil;
     private String organizacionCodigo;
-    private boolean isDriver;// Este es el campo que viene en el JSON como 'organizacionId' según tu request anterior, asegúrate que el mapeo sea correcto o renombra el campo JSON
+    private boolean isDriver;
     private Long conductorId;
 }

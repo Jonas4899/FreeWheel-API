@@ -86,6 +86,13 @@ public class UserServiceImpl implements UserService {
         return userEntityToUserDto(savedUserEntity);
     }
 
+    @Override
+    public UserDTO getUserById(long id) {
+        return userRepository.findById(id)
+                .map(this::userEntityToUserDto)
+                .orElse(null);
+    }
+
     private UserEntity userDtoToUserEntity(UserDTO userDTO) {
         // Ya no necesitas buscar la organización aquí si la pasas como parámetro
         // o si la asignas después de crear el builder como en createUser()
