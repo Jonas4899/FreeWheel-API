@@ -1,0 +1,8 @@
+package com.freewheel.FreeWheelBackend.servicios;
+
+import com.freewheel.FreeWheelBackend.persistencia.dtos.PassengerDTO;
+import com.freewheel.FreeWheelBackend.persistencia.dtos.PassengerRequestDTO;
+
+public interface PassengerService {
+    PassengerDTO createPassenger(PassengerRequestDTO requestDTO);
+}
