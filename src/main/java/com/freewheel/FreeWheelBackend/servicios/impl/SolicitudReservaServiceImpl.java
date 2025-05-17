@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,5 +102,53 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
                 .mensajePasajero(entity.getMensajePasajero())
                 .mensajeConductor(entity.getMensajeConductor())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public boolean aceptarSolicitudReserva(Long id) {
+        logger.debug("Aceptando solicitud de reserva con ID: {}", id);
+
+        SolicitudReservaEntity solicitud = solicitudReservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        // Revisar si hay asientos disponibles
+        TripEntity viaje = solicitud.getViaje();
+
+        if(viaje == null) {
+            logger.warn("El viaje asociado a la solicitud con ID: {} no existe", id);
+            return false;
+        }
+
+        // Verificar primero si la solicitud ya fue aceptada
+        if("ACEPTADO".equals(solicitud.getEstado())) {
+            logger.warn("La solicitud con ID: {} ya ha sido aceptada anteriormente", id);
+            return false;
+        }
+
+        // Y también verificar el estado del viaje de forma segura
+        if(viaje.getEstado() != null && viaje.getEstado().equalsIgnoreCase("ACEPTADO")) {
+            logger.warn("El viaje asociado a la solicitud con ID: {} ya ha sido aceptado", id);
+            return false;
+        }
+
+        if(viaje.getAsientosDisponibles() < solicitud.getAsientosSolicitados()) {
+            logger.warn("No hay asientos disponibles para la solicitud con ID: {}", id);
+            return false;
+        }
+
+        // Actualizar el viaje
+        viaje.setAsientosDisponibles(viaje.getAsientosDisponibles() - solicitud.getAsientosSolicitados());
+        tripRepository.save(viaje);
+
+        // Actualizar la solicitud zoned date
+        solicitud.setFechaRespuesta(java.time.ZonedDateTime.now());
+
+        // Actualizar el estado de la solicitud
+        solicitud.setEstado("ACEPTADO");
+        solicitudReservaRepository.save(solicitud);
+
+        logger.info("Solicitud de reserva con ID: {} aceptada exitosamente", id);
+        return true;
     }
 }

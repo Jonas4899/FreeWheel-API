@@ -11,4 +11,11 @@ public interface SolicitudReservaService {
      * @return Lista de solicitudes de reserva
      */
     List<SolicitudReservaDTO> obtenerHistorialSolicitudesConductor(Long conductorId);
+
+    /**
+     * Acepta una solicitud de reserva
+     * @param id ID de la solicitud
+     * @return Mensaje de éxito o error
+     */
+    boolean aceptarSolicitudReserva(Long id);
 }
