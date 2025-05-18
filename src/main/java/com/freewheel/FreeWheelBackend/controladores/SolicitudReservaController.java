@@ -94,5 +94,29 @@ public class SolicitudReservaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al aceptar la solicitud");
         }
     }
+
+    @PutMapping("/rechazar-solicitud/{id}")
+    public ResponseEntity<String> rechazarSolicitudReserva(@PathVariable Long id) {
+        logger.info("Recibida la solicitud con ID: {}", id);
+
+        try {
+            if (id == null || id <= 0) {
+                logger.warn("ID de solicitud inválido: {}", id);
+                return ResponseEntity.badRequest().body("ID de solicitud inválido");
+            }
+
+            boolean rechazada = solicitudReservaService.rechazarSolicitudReserva(id);
+            if (rechazada) {
+                logger.info("Solicitud con ID {} rechazada correctamente", id);
+                return ResponseEntity.ok("Solicitud rechazada");
+            } else {
+                logger.warn("No se encontró la solicitud con ID {}", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Solicitud no encontrada");
+            }
+        } catch (Exception e) {
+            logger.error("Error al rechazar la solicitud con ID {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al rechazar la solicitud");
+        }
+    }
 }
 

@@ -168,5 +168,30 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
         logger.info("Solicitud de reserva con ID: {} aceptada exitosamente", id);
         return true;
     }
+
+    @Override
+    @Transactional
+    public boolean rechazarSolicitudReserva(Long id) {
+        logger.debug("Rechazando solicitud de reserva con ID: {}", id);
+
+        SolicitudReservaEntity solicitud = solicitudReservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        // Revisar si la solicitud ya fue aceptada
+        if("ACEPTADO".equals(solicitud.getEstado())) {
+            logger.warn("La solicitud con ID: {} ya ha sido aceptada anteriormente", id);
+            return false;
+        }
+
+        // Actualizar la solicitud zoned date
+        solicitud.setFechaRespuesta(java.time.ZonedDateTime.now());
+
+        // Actualizar el estado de la solicitud
+        solicitud.setEstado("RECHAZADO");
+        solicitudReservaRepository.save(solicitud);
+
+        logger.info("Solicitud de reserva con ID: {} rechazada exitosamente", id);
+        return true;
+    }
 }
 
