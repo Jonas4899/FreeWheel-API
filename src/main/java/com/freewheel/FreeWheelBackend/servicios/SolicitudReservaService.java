@@ -25,5 +25,12 @@ public interface SolicitudReservaService {
      * @return Mensaje de éxito o error
      */
     boolean aceptarSolicitudReserva(Long id);
+
+    /**
+     * Rechaza una solicitud de reserva
+     * @param id ID de la solicitud
+     * @return Mensaje de éxito o error
+     */
+    boolean rechazarSolicitudReserva(Long id);
 }
 
