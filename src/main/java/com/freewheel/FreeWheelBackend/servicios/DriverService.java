@@ -8,4 +8,5 @@ public interface DriverService {
     DriverDTO createDriver(DriverDTO driverDTO);
     DriverDTO createDriverWithLicencia(DriverDTO driverDTO, MultipartFile licenciaFrontal, MultipartFile licenciaTrasera);
     UserDTO getUserByDriverId(Long driverId);
+    DriverDTO getDriverByUser(Long userId);
 }
