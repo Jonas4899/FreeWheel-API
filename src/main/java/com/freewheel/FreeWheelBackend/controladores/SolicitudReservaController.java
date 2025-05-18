@@ -49,6 +49,28 @@ public class SolicitudReservaController {
         }
     }
 
+    /**
+     * Obtiene el historial de solicitudes de reserva para un conductor a partir del userId
+     * @param userId ID del usuario (conductor)
+     * @return Lista de solicitudes de reserva asociadas a los viajes del conductor
+     */
+    @GetMapping("/conductor/usuario/{userId}")
+    public ResponseEntity<List<SolicitudReservaDTO>> obtenerHistorialSolicitudesConductorPorUsuario(@PathVariable Long userId) {
+        logger.info("Recibida solicitud para obtener historial de solicitudes del conductor (userId) con ID: {}", userId);
+        try {
+            if (userId == null || userId <= 0) {
+                logger.warn("ID de usuario inválido: {}", userId);
+                return ResponseEntity.badRequest().body(Collections.emptyList());
+            }
+            List<SolicitudReservaDTO> solicitudes = solicitudReservaService.obtenerHistorialSolicitudesConductorPorUsuario(userId);
+            logger.info("Solicitud procesada con éxito. Se encontraron {} solicitudes para el usuario/conductor {}", solicitudes.size(), userId);
+            return ResponseEntity.ok(solicitudes);
+        } catch (Exception e) {
+            logger.error("Error al obtener historial de solicitudes para el usuario/conductor {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+
     @PutMapping("/aceptar-solicitud/{id}")
     public ResponseEntity<String> aceptarSolicitudReserva(@PathVariable Long id) {
         logger.info("Recibida la solicitud con ID: {}", id);
@@ -73,3 +95,4 @@ public class SolicitudReservaController {
         }
     }
 }
+

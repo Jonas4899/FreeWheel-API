@@ -127,4 +127,19 @@ public class DriverServiceImpl implements DriverService {
         }
         return null;
     }
+
+    @Override
+    public DriverDTO getDriverByUser(Long userId) {
+        Optional<DriverEntity> driverEntityOptional = driverRepository.findByUsuario_Id(userId);
+        if (driverEntityOptional.isPresent()) {
+            DriverEntity driverEntity = driverEntityOptional.get();
+            return DriverDTO.builder()
+                    .id(driverEntity.getId())
+                    .usuarioId(driverEntity.getUsuario().getId())
+                    .licenciaConduccionFrontal(driverEntity.getLicenciaConduccionFrontal())
+                    .licenciaConduccionTrasera(driverEntity.getLicenciaConduccionTrasera())
+                    .build();
+        }
+        return null;
+    }
 }

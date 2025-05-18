@@ -3,12 +3,15 @@ package com.freewheel.FreeWheelBackend.servicios.impl;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.SolicitudReservaDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.TripDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
+import com.freewheel.FreeWheelBackend.persistencia.entidades.DriverEntity;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.SolicitudReservaEntity;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.TripEntity;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.UserEntity;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.DriverRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.SolicitudReservaRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.TripRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.DriverRepository;
 import com.freewheel.FreeWheelBackend.servicios.SolicitudReservaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +31,15 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
     private final SolicitudReservaRepository solicitudReservaRepository;
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final DriverRepository driverRepository;
 
     public SolicitudReservaServiceImpl(SolicitudReservaRepository solicitudReservaRepository, 
                                       TripRepository tripRepository,
-                                      UserRepository userRepository) {
+                                      UserRepository userRepository, DriverRepository driverRepository) {
         this.solicitudReservaRepository = solicitudReservaRepository;
         this.tripRepository = tripRepository;
         this.userRepository = userRepository;
+        this.driverRepository = driverRepository;
     }
 
     @Override
@@ -49,7 +54,19 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
                 .map(this::mapToSolicitudReservaDTO)
                 .collect(Collectors.toList());
     }
-    
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SolicitudReservaDTO> obtenerHistorialSolicitudesConductorPorUsuario(Long userId) {
+        logger.debug("Buscando conductor asociado al usuario con ID: {}", userId);
+
+        DriverEntity conductor = driverRepository.findByUsuario_Id(userId)
+                .orElseThrow(() -> new RuntimeException("Conductor no encontrado"));
+
+        // Ahora sí usamos el método existente con el ID de conductor correcto
+        return obtenerHistorialSolicitudesConductor(conductor.getId());
+    }
+
     private SolicitudReservaDTO mapToSolicitudReservaDTO(SolicitudReservaEntity entity) {
         if (entity == null) {
             return null;
@@ -152,3 +169,4 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
         return true;
     }
 }
+
