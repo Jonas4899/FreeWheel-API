@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "solicitud_reserva")
+@Table(name = "pasajeros_viaje")
 public class SolicitudReservaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class SolicitudReservaEntity {
     private TripEntity viaje;
 
     @ManyToOne
-    @JoinColumn(name = "pasajero_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private UserEntity pasajero;
 
     @Column(name = "fecha_solicitud", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
@@ -29,6 +29,9 @@ public class SolicitudReservaEntity {
 
     @Column(name = "estado", nullable = false)
     private String estado;
+
+    @Column(name = "asientos_solicitados")
+    private int asientosSolicitados;
 
     @Column(name = "fecha_respuesta")
     private ZonedDateTime fechaRespuesta;

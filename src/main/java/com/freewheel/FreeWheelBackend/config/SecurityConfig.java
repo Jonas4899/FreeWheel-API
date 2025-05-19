@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/vehiculos/**").permitAll()
                         .requestMatchers("/viajes/**").permitAll()
                         .requestMatchers("/conductores/**").permitAll()
+                        .requestMatchers("/solicitudes-reserva/**").permitAll()
                         .requestMatchers("/pasajeros/**").permitAll()
                         .anyRequest().authenticated()
                 )

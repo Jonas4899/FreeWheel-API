@@ -10,4 +10,5 @@ import java.util.List;
 public interface TripService {
     TripDTO createTrip(TripDTO tripDTO);
     List<TripDTO> buscarViajesDisponibles(TripSearchCriteriaDTO criteria);
+    List<TripDTO> obtenerViajesPorUsuario(Long userId, boolean esConductor);
 }
