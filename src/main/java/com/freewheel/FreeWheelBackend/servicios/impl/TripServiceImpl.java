@@ -2,14 +2,8 @@ package com.freewheel.FreeWheelBackend.servicios.impl;
 
 import com.freewheel.FreeWheelBackend.persistencia.dtos.TripDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.TripSearchCriteriaDTO;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.DriverEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.TripEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.UserEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.VehicleEntity;
-import com.freewheel.FreeWheelBackend.persistencia.repositorios.DriverRepository;
-import com.freewheel.FreeWheelBackend.persistencia.repositorios.TripRepository;
-import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
-import com.freewheel.FreeWheelBackend.persistencia.repositorios.VehicleRepository;
+import com.freewheel.FreeWheelBackend.persistencia.entidades.*;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.*;
 import com.freewheel.FreeWheelBackend.servicios.TripService;
 import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
@@ -32,17 +26,20 @@ public class TripServiceImpl implements TripService {
     private final DriverRepository driverRepository;
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
+    private final SolicitudReservaRepository solicitudReservaRepository;
 
     // Inyección por constructor con todos los repositorios necesarios
     public TripServiceImpl(
             TripRepository tripRepository, 
             DriverRepository driverRepository,
             UserRepository userRepository,
-            VehicleRepository vehicleRepository) {
+            VehicleRepository vehicleRepository,
+            SolicitudReservaRepository solicitudReservaRepository) {
         this.tripRepository = tripRepository;
         this.driverRepository = driverRepository;
         this.userRepository = userRepository;
         this.vehicleRepository = vehicleRepository;
+        this.solicitudReservaRepository = solicitudReservaRepository;
     }
 
     @Override
@@ -255,5 +252,38 @@ public class TripServiceImpl implements TripService {
         }
         
         return builder.build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TripDTO> obtenerViajesPorUsuario(Long userId, boolean esConductor) {
+        logger.debug("Buscando viajes para el usuario con ID: {}", userId);
+
+        List<TripEntity> viajes;
+
+        if (esConductor) {
+            DriverEntity conductor = driverRepository.findByUsuario_Id(userId)
+                    .orElseThrow(() -> new RuntimeException("Conductor no encontrado"));
+            Long conductorId = conductor.getId();
+            viajes = tripRepository.findByConductorId(conductorId);
+        } else {
+            List<SolicitudReservaEntity> solicitudes = solicitudReservaRepository.findAllByPasajero_Id(userId);
+            logger.info("Se encontraron {} solicitudes para el usuario con ID: {}", solicitudes.size(), userId);
+            List<Long> viajeIds = solicitudes.stream()
+                    .map(solicitud -> solicitud.getViaje().getId())
+                    .collect(Collectors.toList());
+
+            viajes = tripRepository.findAllById(viajeIds);
+        }
+
+        if (viajes.isEmpty()) {
+            logger.info("No se encontraron viajes para el usuario con ID: {}", userId);
+            return new ArrayList<>();
+        } else {
+            logger.info("Se encontraron {} viajes para el usuario con ID: {}", viajes.size(), userId);
+            return viajes.stream()
+                    .map(this::mapToTripDTO)
+                    .collect(Collectors.toList());
+        }
     }
 }

@@ -19,4 +19,6 @@ public interface SolicitudReservaRepository extends JpaRepository<SolicitudReser
            "WHERE v.conductorId = :conductorId " +
            "ORDER BY sr.fechaSolicitud DESC")
     List<SolicitudReservaEntity> findAllByConductorId(@Param("conductorId") Long conductorId);
+
+    List<SolicitudReservaEntity> findAllByPasajero_Id(Long usuarioId);
 }

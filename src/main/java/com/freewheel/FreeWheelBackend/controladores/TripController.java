@@ -73,7 +73,21 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonList(createErrorDTO("Error interno al procesar la búsqueda.")));
         }
     }
-    // --- FIN ENDPOINT BUSCAR ---
+
+    @GetMapping("/listar")
+    public ResponseEntity<List<TripDTO>> listarViajes(@RequestParam("userId") Long userId, @RequestParam(value = "esConductor", defaultValue = "false") boolean esConductor ) {
+        logger.info("Recibida solicitud para listar viajes del usuario: {}, esConductor: {}", userId, esConductor);
+        try {
+            List<TripDTO> viajes = tripService.obtenerViajesPorUsuario(userId, esConductor);
+            return ResponseEntity.ok(viajes);
+        } catch (RuntimeException e) {
+            logger.error("Error al listar viajes para el usuario {}: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.emptyList());
+        } catch (Exception e) {
+            logger.error("Error inesperado al listar viajes para el usuario {}: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
 
     // Método helper simple para crear un DTO de error (opcional)
     private TripDTO createErrorDTO(String errorMessage) {
