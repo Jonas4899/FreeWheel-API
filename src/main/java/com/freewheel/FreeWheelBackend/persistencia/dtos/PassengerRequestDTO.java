@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class PassengerRequestDTO {
     private long usuarioId;
     private long viajeId;
+    private int asientosSolicitados;
 }

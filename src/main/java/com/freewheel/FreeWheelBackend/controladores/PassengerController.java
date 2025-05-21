@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/pasajeros")
@@ -22,6 +22,7 @@ public class PassengerController {
         this.passengerService = passengerService;
     }
 
+    //crear pasajeros
     @PostMapping("/crear")
     public ResponseEntity<PassengerDTO> createPassenger(@RequestBody PassengerRequestDTO requestDTO) {
         PassengerDTO savedPassenger = passengerService.createPassenger(requestDTO);
@@ -40,4 +41,19 @@ public class PassengerController {
 
         return new ResponseEntity<>(response, status);
     }
+
+    //Obtener los pasajeros pendientes de un viaje
+    @GetMapping("/viaje/{viajeId}")
+    public ResponseEntity<?> getPendingPassengersByTripId(@PathVariable long viajeId) {
+        List<PassengerDTO> pendingPassengers = passengerService.getPendingPassengersByTripId(viajeId);
+
+        if (pendingPassengers.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "No hay pasajeros pendientes para este viaje");
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.ok(pendingPassengers);
+    }
+
 }

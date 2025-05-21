@@ -24,6 +24,9 @@ public class PassengerEntity {
     @Column(name="viaje_id")
     private long viajeId;
 
+    @Column(name="asientos_solicitados")
+    private int asientosSolicitados;
+
     @Column(name="pago_realizado")
     private boolean pagoRealizado;
 
