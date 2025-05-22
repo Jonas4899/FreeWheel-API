@@ -22,4 +22,6 @@ public class SolicitudReservaDTO {
     private ZonedDateTime fechaRespuesta;
     private String mensajePasajero;
     private String mensajeConductor;
+
+    private int asientosSolicitados;
 }
