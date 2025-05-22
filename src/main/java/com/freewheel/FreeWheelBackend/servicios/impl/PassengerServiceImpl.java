@@ -36,6 +36,11 @@ public class PassengerServiceImpl implements PassengerService {
         long userId = requestDTO.getUsuarioId();
         int asientosSolicitados = requestDTO.getAsientosSolicitados();
 
+        // Verificar si el pasajero ya está registrado en este viaje
+        if (passengerRepository.existsByUsuario_IdAndViajeId(userId, viajeId)) {
+            throw new RuntimeException("Ya has solicitado un asiento en este viaje");
+        }
+
         // Obtener información del usuario
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));

@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface PassengerRepository extends JpaRepository<PassengerEntity, Long> {
     List<PassengerEntity> findByViajeIdAndEstado(long viajeId, String estado);
+    boolean existsByUsuario_IdAndViajeId(long usuarioId, long viajeId);
 }
