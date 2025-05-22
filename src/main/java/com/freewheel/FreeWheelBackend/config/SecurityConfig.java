@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/viajes/**").permitAll()
                         .requestMatchers("/conductores/**").permitAll()
                         .requestMatchers("/solicitudes-reserva/**").permitAll()
+                        .requestMatchers("/pasajeros/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

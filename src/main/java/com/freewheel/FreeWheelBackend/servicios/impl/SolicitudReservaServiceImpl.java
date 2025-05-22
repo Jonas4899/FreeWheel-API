@@ -71,8 +71,8 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
         if (entity == null) {
             return null;
         }
-        
-        // Obtener datos del viaje
+
+        // Obtener datos del viaje completos
         TripDTO tripDTO = null;
         if (entity.getViaje() != null) {
             TripEntity tripEntity = entity.getViaje();
@@ -93,7 +93,7 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
                     .estado(tripEntity.getEstado())
                     .build();
         }
-        
+
         // Obtener datos del pasajero
         UserDTO pasajeroDTO = null;
         if (entity.getPasajero() != null) {
@@ -103,10 +103,13 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
                     .correo(pasajeroEntity.getCorreo())
                     .nombre(pasajeroEntity.getNombre())
                     .apellido(pasajeroEntity.getApellido())
-                    // Agregar otras propiedades necesarias del pasajero
+                    .telefono(pasajeroEntity.getTelefono())
+                    .fotoPerfil(pasajeroEntity.getFotoPerfil())
+                    .organizacionCodigo(pasajeroEntity.getOrganizacion() != null ?
+                            pasajeroEntity.getOrganizacion().getCodigo() : null)
                     .build();
         }
-        
+
         return SolicitudReservaDTO.builder()
                 .id(entity.getId())
                 .viajeId(entity.getViaje() != null ? entity.getViaje().getId() : 0)
@@ -118,6 +121,7 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
                 .fechaRespuesta(entity.getFechaRespuesta())
                 .mensajePasajero(entity.getMensajePasajero())
                 .mensajeConductor(entity.getMensajeConductor())
+                .asientosSolicitados(entity.getAsientosSolicitados()) // Añadir asientos solicitados
                 .build();
     }
 

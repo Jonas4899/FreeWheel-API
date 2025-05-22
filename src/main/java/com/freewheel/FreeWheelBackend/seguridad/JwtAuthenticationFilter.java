@@ -12,7 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import java.util.List;
+import java.util.Arrays;
 import java.io.IOException;
 
 @Component
@@ -27,6 +28,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authorizationHeader = request.getHeader("Authorization");
         String uri = request.getRequestURI();
+
+        // Lista de rutas públicas que no requieren validación de token
+        List<String> publicPaths = Arrays.asList(
+                "/usuarios/", "/auth/", "/vehiculos/", "/viajes/", "/conductores/", "/pasajeros/"
+        );
+
+        // Si es una ruta pública, permitir el acceso sin validar token
+        boolean isPublicPath = publicPaths.stream().anyMatch(path -> uri.startsWith(path));
+        if (isPublicPath) {
+            System.out.println("Ruta pública detectada: " + uri + " - Se omite validación de token");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         System.out.println("========== JWT FILTER DEBUG ==========");
         System.out.println("URI solicitada: " + uri);

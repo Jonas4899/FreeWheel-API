@@ -12,4 +12,5 @@ public interface TripService {
     List<TripDTO> buscarViajesDisponibles(TripSearchCriteriaDTO criteria);
     List<TripDTO> obtenerViajesPorUsuario(Long userId, boolean esConductor);
     TripDTO iniciarViaje(Long tripId); // Nuevo método para iniciar un viaje
+    List<TripDTO> obtenerViajesPorConductorId(Long conductorId);
 }

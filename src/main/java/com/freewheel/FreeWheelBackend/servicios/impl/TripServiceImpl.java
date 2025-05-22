@@ -318,4 +318,20 @@ public class TripServiceImpl implements TripService {
                     .collect(Collectors.toList());
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TripDTO> obtenerViajesPorConductorId(Long conductorId) {
+        List<TripEntity> viajes = tripRepository.findByConductorId(conductorId);
+
+        if (viajes.isEmpty()) {
+            logger.info("No se encontraron viajes para el conductor con ID: {}", conductorId);
+            return new ArrayList<>();
+        } else {
+            logger.info("Se encontraron {} viajes para el conductor con ID: {}", viajes.size(), conductorId);
+            return viajes.stream()
+                    .map(this::mapToTripDTO)
+                    .collect(Collectors.toList());
+        }
+    }
 }
