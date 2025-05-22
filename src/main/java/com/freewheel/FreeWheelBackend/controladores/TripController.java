@@ -89,6 +89,28 @@ public class TripController {
         }
     }
 
+    @PatchMapping("/{tripId}/iniciar")
+    public ResponseEntity<TripDTO> iniciarViaje(@PathVariable Long tripId) {
+        logger.info("Recibida solicitud para iniciar el viaje con ID: {}", tripId);
+        try {
+            TripDTO viajeIniciado = tripService.iniciarViaje(tripId);
+            return ResponseEntity.ok(viajeIniciado);
+        } catch (IllegalStateException e) {
+            // Error de estado inválido (ej: viaje ya iniciado)
+            logger.warn("No se pudo iniciar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(createErrorDTO(e.getMessage()));
+        } catch (RuntimeException e) {
+            // Viaje no encontrado u otro error
+            logger.error("Error al iniciar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createErrorDTO(e.getMessage()));
+        } catch (Exception e) {
+            // Error inesperado
+            logger.error("Error inesperado al iniciar el viaje {}: ", tripId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorDTO("Error interno al iniciar el viaje."));
+        }
+    }
+
     // Método helper simple para crear un DTO de error (opcional)
     private TripDTO createErrorDTO(String errorMessage) {
         TripDTO errorDto = new TripDTO();

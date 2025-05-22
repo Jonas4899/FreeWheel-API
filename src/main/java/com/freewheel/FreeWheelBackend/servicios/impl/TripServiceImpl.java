@@ -194,6 +194,38 @@ public class TripServiceImpl implements TripService {
         }
     }
 
+    @Override
+    @Transactional
+    public TripDTO iniciarViaje(Long tripId) {
+        logger.debug("Iniciando viaje con ID: {}", tripId);
+
+        TripEntity tripEntity = tripRepository.findById(tripId)
+                .orElseThrow(() -> {
+                    logger.error("Viaje no encontrado con ID: {}", tripId);
+                    return new RuntimeException("Viaje no encontrado con ID: " + tripId);
+                });
+
+        // Verificamos que el viaje esté en estado 'por iniciar'
+        if (!"por iniciar".equals(tripEntity.getEstado())) {
+            logger.warn("No se puede iniciar el viaje ID: {} porque su estado actual es: {}",
+                        tripId, tripEntity.getEstado());
+            throw new IllegalStateException(
+                "No se puede iniciar el viaje porque su estado actual es: " + tripEntity.getEstado());
+        }
+
+        // Actualizamos únicamente el estado del viaje
+        tripEntity.setEstado("iniciado");
+
+        try {
+            TripEntity savedTrip = tripRepository.save(tripEntity);
+            logger.info("Viaje con ID: {} iniciado exitosamente", tripId);
+            return mapToTripDTO(savedTrip);
+        } catch (Exception e) {
+            logger.error("Error al iniciar el viaje con ID: {}", tripId, e);
+            throw new RuntimeException("Error al iniciar el viaje", e);
+        }
+    }
+
     // Método helper para mapear de Entidad a DTO con información adicional
     private TripDTO mapToTripDTO(TripEntity entity) {
         if (entity == null) {
