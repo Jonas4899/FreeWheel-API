@@ -10,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/viajes")
@@ -95,5 +97,24 @@ public class TripController {
         // Puedes usar un campo existente como 'estado' o añadir uno específico para errores
         errorDto.setEstado("ERROR: " + errorMessage);
         return errorDto;
+    }
+
+    @GetMapping("/conductor/{conductorId}")
+    public ResponseEntity<?> listarViajesPorConductorId(@PathVariable("conductorId") Long conductorId) {
+        logger.info("Recibida solicitud para listar viajes del conductor con ID: {}", conductorId);
+        try {
+            List<TripDTO> viajes = tripService.obtenerViajesPorConductorId(conductorId);
+
+            if (viajes.isEmpty()) {
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "NO tienes viajes creados");
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.ok(viajes);
+        } catch (Exception e) {
+            logger.error("Error al listar viajes para el conductor con ID {}: {}", conductorId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
     }
 }
