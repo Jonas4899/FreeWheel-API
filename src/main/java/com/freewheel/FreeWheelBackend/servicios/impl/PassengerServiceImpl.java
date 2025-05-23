@@ -13,14 +13,17 @@ import com.freewheel.FreeWheelBackend.persistencia.repositorios.TripRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.VehicleRepository;
 import com.freewheel.FreeWheelBackend.servicios.PassengerService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 public class PassengerServiceImpl implements PassengerService {
-
 
     // Incluir calificaciones también
     //@Autowired
@@ -211,10 +214,50 @@ public class PassengerServiceImpl implements PassengerService {
                 .filter(passenger -> {
                     TripEntity trip = tripRepository.findById(passenger.getViajeId()).orElse(null);
                     return trip != null &&
-                            (trip.getEstado().equals("iniciado") || trip.getEstado().equals("por iniciar")) &&
-                            (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO"));
+                            (trip.getEstado().equals(trip.getEstado().equals("por iniciar")) &&
+                            (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO")));
                 })
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    //Eliminar un pasajero
+    @Override
+    @Transactional
+    public Map<String, Object> removePassengerFromTrip(long usuarioId, long viajeId) {
+        // Buscar el pasajero por usuarioId y viajeId
+        List<PassengerEntity> passengersFound = passengerRepository.findByUsuario_IdAndViajeId(usuarioId, viajeId);
+
+        if (passengersFound.isEmpty()) {
+            throw new RuntimeException("No se encontró ningún registro de pasajero para el usuario " + usuarioId + " en el viaje " + viajeId);
+        }
+
+        PassengerEntity passengerEntity = passengersFound.get(0);
+        String estadoPasajero = passengerEntity.getEstado();
+        int asientosSolicitados = passengerEntity.getAsientosSolicitados();
+
+        // Si el estado es ACEPTADO, actualizar los asientos disponibles en el viaje
+        if ("ACEPTADO".equals(estadoPasajero)) {
+            TripEntity tripEntity = tripRepository.findById(viajeId)
+                    .orElseThrow(() -> new RuntimeException("Viaje no encontrado con ID: " + viajeId));
+
+            // Actualizar asientos disponibles
+            int nuevosAsientosDisponibles = tripEntity.getAsientosDisponibles() + asientosSolicitados;
+            tripEntity.setAsientosDisponibles(nuevosAsientosDisponibles);
+            tripRepository.save(tripEntity);
+        }
+
+        // Eliminar al pasajero
+        passengerRepository.delete(passengerEntity);
+
+        // Preparar respuesta
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Pasajero eliminado del viaje correctamente");
+        response.put("estadoPrevio", estadoPasajero);
+        response.put("asientosSolicitados", asientosSolicitados);
+        response.put("asientosActualizados", "ACEPTADO".equals(estadoPasajero));
+
+        return response;
+    }
+
 }
