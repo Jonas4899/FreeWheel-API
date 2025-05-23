@@ -37,6 +37,15 @@ public class TripController {
         }
     }
 
+    // --- NUEVO ENDPOINT PARA BUSCAR VIAJES ---
+    /**
+     * Busca viajes disponibles según criterios, incluyendo proximidad geográfica.
+     * Los criterios se pasan como parámetros de URL.
+     * Ejemplo: /viajes/buscar?latitudOrigenBusqueda=4.71&longitudOrigenBusqueda=-74.07&latitudDestinoBusqueda=4.60&longitudDestinoBusqueda=-74.08&fecha=11/04/2025&radioBusquedaKm=5&numeroAsientosRequeridos=1
+     *
+     * @param criteria Objeto que mapea los parámetros de la query (?param1=val1&...)
+     * @return ResponseEntity con la lista de TripDTO encontrados o un error.
+     */
     @PostMapping("/buscar")
     public ResponseEntity<List<TripDTO>> buscarViajesDisponibles(@RequestBody TripSearchCriteriaDTO criteria) {
         logger.info("Recibida solicitud de búsqueda de viajes con criterios: {}", criteria);
@@ -104,6 +113,29 @@ public class TripController {
         }
     }
 
+    @PatchMapping("/cancelar-conductor/{tripId}")
+    public ResponseEntity<TripDTO> cancelarViajeConductor(@PathVariable Long tripId) {
+        logger.info("Recibida solicitud para cancelar el viaje con ID: {}", tripId);
+        try {
+            TripDTO viajeCancelado = tripService.cancelarViajeConductor(tripId);
+            return ResponseEntity.ok(viajeCancelado);
+        } catch (IllegalStateException e) {
+            // Error de estado inválido (ej: viaje ya iniciado)
+            logger.warn("No se pudo cancelar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(createErrorDTO(e.getMessage()));
+        } catch (RuntimeException e) {
+            // Viaje no encontrado u otro error
+            logger.error("Error al cancelar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createErrorDTO(e.getMessage()));
+        } catch (Exception e) {
+            // Error inesperado
+            logger.error("Error inesperado al cancelar el viaje {}: ", tripId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorDTO("Error interno al cancelar el viaje."));
+        }
+    }
+
+    // Metodo helper simple para crear un DTO de error (opcional)
     @PatchMapping("/{tripId}/finalizar")
     public ResponseEntity<TripDTO> finalizarViaje(@PathVariable Long tripId) {
         logger.info("Recibida solicitud para finalizar el viaje con ID: {}", tripId);
