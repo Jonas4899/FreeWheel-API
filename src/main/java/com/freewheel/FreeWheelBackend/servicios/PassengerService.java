@@ -7,4 +7,5 @@ import java.util.List;
 public interface PassengerService {
     PassengerDTO createPassenger(PassengerRequestDTO requestDTO);
     List<PassengerDTO> getPendingPassengersByTripId(long tripId);
+    List<PassengerDTO> getPassengerTripsByUserId(long userId);
 }

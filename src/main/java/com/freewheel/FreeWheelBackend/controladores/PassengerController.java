@@ -56,4 +56,18 @@ public class PassengerController {
         return ResponseEntity.ok(pendingPassengers);
     }
 
+    //Obtener los viajes usando usuario_id
+    @GetMapping("/viajes-usuario/{usuarioId}")
+    public ResponseEntity<?> getPassengerTripsByUserId(@PathVariable long usuarioId) {
+        List<PassengerDTO> passengerTrips = passengerService.getPassengerTripsByUserId(usuarioId);
+
+        if (passengerTrips.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "No se encontraron viajes iniciados o por iniciar para este usuario");
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.ok(passengerTrips);
+    }
+
 }

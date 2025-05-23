@@ -7,9 +7,11 @@ import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.PassengerEntity;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.TripEntity;
 import com.freewheel.FreeWheelBackend.persistencia.entidades.UserEntity;
+import com.freewheel.FreeWheelBackend.persistencia.entidades.VehicleEntity;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.PassengerRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.TripRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.VehicleRepository;
 import com.freewheel.FreeWheelBackend.servicios.PassengerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,15 +21,23 @@ import java.util.stream.Collectors;
 @Service
 public class PassengerServiceImpl implements PassengerService {
 
+
+    // Incluir calificaciones también
+    //@Autowired
+    //private RatingRepository ratingRepository;
+
     private final PassengerRepository passengerRepository;
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
 
+    private VehicleRepository vehicleRepository;
+
     @Autowired
-    public PassengerServiceImpl(PassengerRepository passengerRepository, UserRepository userRepository, TripRepository tripRepository) {
+    public PassengerServiceImpl(PassengerRepository passengerRepository, UserRepository userRepository, TripRepository tripRepository, VehicleRepository vehicleRepository) {
         this.passengerRepository = passengerRepository;
         this.userRepository = userRepository;
         this.tripRepository = tripRepository;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @Override
@@ -118,5 +128,93 @@ public class PassengerServiceImpl implements PassengerService {
                         .build();
             })
             .collect(Collectors.toList());
+    }
+
+    private PassengerDTO convertToDTO(PassengerEntity entity) {
+        UserEntity user = entity.getUsuario();
+
+        /* no incluir los datos del pasajero por ahora
+        UserDTO pasajeroDTO = UserDTO.builder()
+                .id(user.getId())
+                .nombre(user.getNombre())
+                .apellido(user.getApellido())
+                .correo(user.getCorreo())
+                .telefono(user.getTelefono())
+                .fotoPerfil(user.getFotoPerfil())
+                .organizacionCodigo(user.getOrganizacion() != null ?
+                        user.getOrganizacion().getCodigo() : null)
+                .build();
+        */
+        // Obtener información completa del viaje para el DTO
+        TripEntity tripEntity = tripRepository.findById(entity.getViajeId()).orElse(null);
+        TripDTO tripDTO = null;
+
+        if (tripEntity != null) {
+            // Obtener información del conductor
+            UserEntity conductorUser = userRepository.findById(tripEntity.getConductorId())
+                    .orElse(null);
+
+            // Obtener información del vehículo del conductor
+            List<VehicleEntity> vehiculos = vehicleRepository.findByConductorId(tripEntity.getConductorId());
+            VehicleEntity vehiculo = vehiculos != null && !vehiculos.isEmpty() ? vehiculos.get(0) : null;
+
+            tripDTO = TripDTO.builder()
+                    .id(tripEntity.getId())
+                    .conductorId(tripEntity.getConductorId())
+                    .nombreConductor(conductorUser != null ? conductorUser.getNombre() : null)
+                    .apellidoConductor(conductorUser != null ? conductorUser.getApellido() : null)
+                    .fotoConductor(conductorUser != null ? conductorUser.getFotoPerfil() : null)
+                    .telefonoConductor(conductorUser != null ? conductorUser.getTelefono() : null)
+                    .fecha(tripEntity.getFecha())
+                    .horaInicio(tripEntity.getHoraInicio())
+                    .precioAsiento(tripEntity.getPrecioAsiento())
+                    .asientosDisponibles(tripEntity.getAsientosDisponibles())
+                    .direccionOrigen(tripEntity.getDireccionOrigen())
+                    .direccionDestino(tripEntity.getDireccionDestino())
+                    .estado(tripEntity.getEstado())
+                    // Agregar información del vehículo
+                    .vehiculoPlaca(vehiculo != null ? vehiculo.getPlaca() : null)
+                    .vehiculoMarca(vehiculo != null ? vehiculo.getMarca() : null)
+                    .vehiculoModelo(vehiculo != null ? vehiculo.getModelo() : null)
+                    .vehiculoColor(vehiculo != null ? vehiculo.getColor() : null)
+                    .vehiculoTipo(vehiculo != null ? vehiculo.getTipo() : null)
+                    .vehiculoFoto(vehiculo != null ? vehiculo.getFoto() : null)
+                    .build();
+
+            // También hay un error en esta sección - ratingRepository no está inyectado
+            // Comenta estas líneas o inyecta correctamente el repositorio
+        /*
+        if (conductorUser != null) {
+            Double calificacionPromedio = ratingRepository.findAverageRatingByDriverId(tripEntity.getConductorId());
+            tripDTO.setCalificacionConductor(calificacionPromedio);
+        }
+        */
+        }
+
+        return PassengerDTO.builder()
+                .id(entity.getId())
+                .viaje(tripDTO)
+                //.pasajero(pasajeroDTO)
+                .asientosSolicitados(entity.getAsientosSolicitados())
+                .pagoRealizado(entity.isPagoRealizado())
+                .estado(entity.getEstado())
+                .build();
+    }
+
+    //Obtener los viajes usando el usuario_id
+    @Override
+    public List<PassengerDTO> getPassengerTripsByUserId(long userId) {
+        List<PassengerEntity> passengerEntities = passengerRepository.findByUsuario_Id(userId);
+
+        // Filtrar viajes por estado del viaje y estado del pasajero
+        return passengerEntities.stream()
+                .filter(passenger -> {
+                    TripEntity trip = tripRepository.findById(passenger.getViajeId()).orElse(null);
+                    return trip != null &&
+                            (trip.getEstado().equals("iniciado") || trip.getEstado().equals("por iniciar")) &&
+                            (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO"));
+                })
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }
