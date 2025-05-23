@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -223,6 +224,46 @@ public class TripServiceImpl implements TripService {
         } catch (Exception e) {
             logger.error("Error al iniciar el viaje con ID: {}", tripId, e);
             throw new RuntimeException("Error al iniciar el viaje", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public TripDTO finalizarViaje(Long tripId) {
+        logger.debug("Finalizando viaje con ID: {}", tripId);
+
+        TripEntity tripEntity = tripRepository.findById(tripId)
+                .orElseThrow(() -> {
+                    logger.error("Viaje no encontrado con ID: {}", tripId);
+                    return new RuntimeException("Viaje no encontrado con ID: " + tripId);
+                });
+
+        // Verificamos que el viaje esté en estado 'iniciado'
+        if (!"iniciado".equals(tripEntity.getEstado())) {
+            logger.warn("No se puede finalizar el viaje ID: {} porque su estado actual es: {}",
+                        tripId, tripEntity.getEstado());
+            throw new IllegalStateException(
+                "No se puede finalizar el viaje porque su estado actual es: " + tripEntity.getEstado());
+        }
+
+        // Actualizamos el estado del viaje y la hora de fin
+        tripEntity.setEstado("finalizado");
+        tripEntity.setHoraFin(LocalTime.now());
+
+        // Buscamos todas las solicitudes de reserva asociadas a este viaje y actualizamos el estado pago_realizado
+        List<SolicitudReservaEntity> solicitudes = solicitudReservaRepository.findAllByViaje_Id(tripId);
+        for (SolicitudReservaEntity solicitud : solicitudes) {
+            solicitud.setPagoRealizado(true);
+            solicitudReservaRepository.save(solicitud);
+        }
+
+        try {
+            TripEntity savedTrip = tripRepository.save(tripEntity);
+            logger.info("Viaje con ID: {} finalizado exitosamente", tripId);
+            return mapToTripDTO(savedTrip);
+        } catch (Exception e) {
+            logger.error("Error al finalizar el viaje con ID: {}", tripId, e);
+            throw new RuntimeException("Error al finalizar el viaje", e);
         }
     }
 
