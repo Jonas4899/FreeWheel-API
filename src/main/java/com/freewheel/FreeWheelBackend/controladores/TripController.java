@@ -37,15 +37,6 @@ public class TripController {
         }
     }
 
-    // --- NUEVO ENDPOINT PARA BUSCAR VIAJES ---
-    /**
-     * Busca viajes disponibles según criterios, incluyendo proximidad geográfica.
-     * Los criterios se pasan como parámetros de URL.
-     * Ejemplo: /viajes/buscar?latitudOrigenBusqueda=4.71&longitudOrigenBusqueda=-74.07&latitudDestinoBusqueda=4.60&longitudDestinoBusqueda=-74.08&fecha=11/04/2025&radioBusquedaKm=5&numeroAsientosRequeridos=1
-     *
-     * @param criteria Objeto que mapea los parámetros de la query (?param1=val1&...)
-     * @return ResponseEntity con la lista de TripDTO encontrados o un error.
-     */
     @PostMapping("/buscar")
     public ResponseEntity<List<TripDTO>> buscarViajesDisponibles(@RequestBody TripSearchCriteriaDTO criteria) {
         logger.info("Recibida solicitud de búsqueda de viajes con criterios: {}", criteria);
@@ -113,7 +104,28 @@ public class TripController {
         }
     }
 
-    // Método helper simple para crear un DTO de error (opcional)
+    @PatchMapping("/{tripId}/finalizar")
+    public ResponseEntity<TripDTO> finalizarViaje(@PathVariable Long tripId) {
+        logger.info("Recibida solicitud para finalizar el viaje con ID: {}", tripId);
+        try {
+            TripDTO viajeFinalizado = tripService.finalizarViaje(tripId);
+            return ResponseEntity.ok(viajeFinalizado);
+        } catch (IllegalStateException e) {
+            // Error de estado inválido (ej: viaje ya finalizado)
+            logger.warn("No se pudo finalizar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(createErrorDTO(e.getMessage()));
+        } catch (RuntimeException e) {
+            // Viaje no encontrado u otro error
+            logger.error("Error al finalizar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createErrorDTO(e.getMessage()));
+        } catch (Exception e) {
+            // Error inesperado
+            logger.error("Error inesperado al finalizar el viaje {}: ", tripId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorDTO("Error interno al finalizar el viaje."));
+        }
+    }
+
     private TripDTO createErrorDTO(String errorMessage) {
         TripDTO errorDto = new TripDTO();
         // Puedes usar un campo existente como 'estado' o añadir uno específico para errores

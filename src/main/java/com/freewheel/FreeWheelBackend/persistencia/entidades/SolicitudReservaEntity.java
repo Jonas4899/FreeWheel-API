@@ -30,6 +30,9 @@ public class SolicitudReservaEntity {
     @Column(name = "estado", nullable = false)
     private String estado;
 
+    @Column(name = "pago_realizado")
+    private boolean pagoRealizado;
+
     @Column(name = "asientos_solicitados")
     private int asientosSolicitados;
 
