@@ -226,6 +226,37 @@ public class TripServiceImpl implements TripService {
         }
     }
 
+    //metodo para cancelar un viaje
+    @Override
+    @Transactional
+    public TripDTO cancelarViajeConductor(Long tripId) {
+
+        TripEntity tripEntity = tripRepository.findById(tripId)
+                .orElseThrow(() -> {
+                    logger.error("Viaje no encontrado con ID: {}", tripId);
+                    return new RuntimeException("Viaje no encontrado con ID: " + tripId);
+                });
+
+        if (!"por iniciar".equals(tripEntity.getEstado())) {
+            logger.warn("No se puede cancelar el viaje ID: {} porque su estado actual es: {}",
+                    tripId, tripEntity.getEstado());
+            throw new IllegalStateException(
+                    "No se puede cancelar el viaje porque su estado actual es: " + tripEntity.getEstado());
+        }
+
+        tripEntity.setEstado("CANCELADO");
+
+        try {
+            TripEntity savedTrip = tripRepository.save(tripEntity);
+            logger.info("Viaje con ID: {} cancelado exitosamente", tripId);
+            return mapToTripDTO(savedTrip);
+        } catch (Exception e) {
+            logger.error("Error al cancelar el viaje con ID: {}", tripId, e);
+            throw new RuntimeException("Error al cancelar el viaje", e);
+        }
+
+    }
+
     // Método helper para mapear de Entidad a DTO con información adicional
     private TripDTO mapToTripDTO(TripEntity entity) {
         if (entity == null) {

@@ -113,7 +113,29 @@ public class TripController {
         }
     }
 
-    // Método helper simple para crear un DTO de error (opcional)
+    @PatchMapping("/cancelar-conductor/{tripId}")
+    public ResponseEntity<TripDTO> cancelarViajeConductor(@PathVariable Long tripId) {
+        logger.info("Recibida solicitud para cancelar el viaje con ID: {}", tripId);
+        try {
+            TripDTO viajeCancelado = tripService.cancelarViajeConductor(tripId);
+            return ResponseEntity.ok(viajeCancelado);
+        } catch (IllegalStateException e) {
+            // Error de estado inválido (ej: viaje ya iniciado)
+            logger.warn("No se pudo cancelar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(createErrorDTO(e.getMessage()));
+        } catch (RuntimeException e) {
+            // Viaje no encontrado u otro error
+            logger.error("Error al cancelar el viaje {}: {}", tripId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(createErrorDTO(e.getMessage()));
+        } catch (Exception e) {
+            // Error inesperado
+            logger.error("Error inesperado al cancelar el viaje {}: ", tripId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorDTO("Error interno al cancelar el viaje."));
+        }
+    }
+
+    // Metodo helper simple para crear un DTO de error (opcional)
     private TripDTO createErrorDTO(String errorMessage) {
         TripDTO errorDto = new TripDTO();
         // Puedes usar un campo existente como 'estado' o añadir uno específico para errores
