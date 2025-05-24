@@ -1,0 +1,10 @@
+spring.application.name=FreeWheelBackend
+server.port={PORT}
+
+spring.datasource.url=jdbc:{URL}
+spring.datasource.username={USERNAME}
+spring.datasource.password={PASSWORD}
+
+# Configuración de JPA/Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=update
