@@ -4,16 +4,14 @@ import com.freewheel.FreeWheelBackend.persistencia.dtos.PassengerDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.PassengerRequestDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.TripDTO;
 import com.freewheel.FreeWheelBackend.persistencia.dtos.UserDTO;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.PassengerEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.TripEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.UserEntity;
-import com.freewheel.FreeWheelBackend.persistencia.entidades.VehicleEntity;
+import com.freewheel.FreeWheelBackend.persistencia.entidades.*;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.PassengerRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.TripRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.UserRepository;
+import com.freewheel.FreeWheelBackend.persistencia.repositorios.DriverRepository;
 import com.freewheel.FreeWheelBackend.persistencia.repositorios.VehicleRepository;
 import com.freewheel.FreeWheelBackend.servicios.PassengerService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,14 +31,16 @@ public class PassengerServiceImpl implements PassengerService {
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
 
-    private VehicleRepository vehicleRepository;
+    private final VehicleRepository vehicleRepository;
+    private final DriverRepository driverRepository;
 
     @Autowired
-    public PassengerServiceImpl(PassengerRepository passengerRepository, UserRepository userRepository, TripRepository tripRepository, VehicleRepository vehicleRepository) {
+    public PassengerServiceImpl(PassengerRepository passengerRepository, UserRepository userRepository, TripRepository tripRepository, VehicleRepository vehicleRepository, DriverRepository driverRepository) {
         this.passengerRepository = passengerRepository;
         this.userRepository = userRepository;
         this.tripRepository = tripRepository;
         this.vehicleRepository = vehicleRepository;
+        this.driverRepository = driverRepository;
     }
 
     @Override
@@ -134,28 +134,14 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     private PassengerDTO convertToDTO(PassengerEntity entity) {
-        UserEntity user = entity.getUsuario();
-
-        /* no incluir los datos del pasajero por ahora
-        UserDTO pasajeroDTO = UserDTO.builder()
-                .id(user.getId())
-                .nombre(user.getNombre())
-                .apellido(user.getApellido())
-                .correo(user.getCorreo())
-                .telefono(user.getTelefono())
-                .fotoPerfil(user.getFotoPerfil())
-                .organizacionCodigo(user.getOrganizacion() != null ?
-                        user.getOrganizacion().getCodigo() : null)
-                .build();
-        */
         // Obtener información completa del viaje para el DTO
         TripEntity tripEntity = tripRepository.findById(entity.getViajeId()).orElse(null);
         TripDTO tripDTO = null;
 
         if (tripEntity != null) {
-            // Obtener información del conductor
-            UserEntity conductorUser = userRepository.findById(tripEntity.getConductorId())
-                    .orElse(null);
+            // Obtener información del conductor - CORREGIDO
+            DriverEntity driverEntity = driverRepository.findById(tripEntity.getConductorId()).orElse(null);
+            UserEntity conductorUser = driverEntity != null ? driverEntity.getUsuario() : null;
 
             // Obtener información del vehículo del conductor
             List<VehicleEntity> vehiculos = vehicleRepository.findByConductorId(tripEntity.getConductorId());
@@ -170,10 +156,15 @@ public class PassengerServiceImpl implements PassengerService {
                     .telefonoConductor(conductorUser != null ? conductorUser.getTelefono() : null)
                     .fecha(tripEntity.getFecha())
                     .horaInicio(tripEntity.getHoraInicio())
+                    .horaFin(tripEntity.getHoraFin())
                     .precioAsiento(tripEntity.getPrecioAsiento())
                     .asientosDisponibles(tripEntity.getAsientosDisponibles())
                     .direccionOrigen(tripEntity.getDireccionOrigen())
+                    .latitudOrigen(tripEntity.getLatitudOrigen())
+                    .longitudOrigen(tripEntity.getLongitudOrigen())
                     .direccionDestino(tripEntity.getDireccionDestino())
+                    .latitudDestino(tripEntity.getLatitudDestino())
+                    .longitudDestino(tripEntity.getLongitudDestino())
                     .estado(tripEntity.getEstado())
                     // Agregar información del vehículo
                     .vehiculoPlaca(vehiculo != null ? vehiculo.getPlaca() : null)
@@ -183,21 +174,11 @@ public class PassengerServiceImpl implements PassengerService {
                     .vehiculoTipo(vehiculo != null ? vehiculo.getTipo() : null)
                     .vehiculoFoto(vehiculo != null ? vehiculo.getFoto() : null)
                     .build();
-
-            // También hay un error en esta sección - ratingRepository no está inyectado
-            // Comenta estas líneas o inyecta correctamente el repositorio
-        /*
-        if (conductorUser != null) {
-            Double calificacionPromedio = ratingRepository.findAverageRatingByDriverId(tripEntity.getConductorId());
-            tripDTO.setCalificacionConductor(calificacionPromedio);
-        }
-        */
         }
 
         return PassengerDTO.builder()
                 .id(entity.getId())
                 .viaje(tripDTO)
-                //.pasajero(pasajeroDTO)
                 .asientosSolicitados(entity.getAsientosSolicitados())
                 .pagoRealizado(entity.isPagoRealizado())
                 .estado(entity.getEstado())
@@ -214,8 +195,8 @@ public class PassengerServiceImpl implements PassengerService {
                 .filter(passenger -> {
                     TripEntity trip = tripRepository.findById(passenger.getViajeId()).orElse(null);
                     return trip != null &&
-                            (trip.getEstado().equals(trip.getEstado().equals("por iniciar")) &&
-                            (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO")));
+                            trip.getEstado().equals("por iniciar") &&
+                            (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO"));
                 })
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
