@@ -56,4 +56,36 @@ public class PassengerController {
         return ResponseEntity.ok(pendingPassengers);
     }
 
+    //Obtener los viajes usando usuario_id
+    @GetMapping("/viajes-usuario/{usuarioId}")
+    public ResponseEntity<?> getPassengerTripsByUserId(@PathVariable long usuarioId) {
+        List<PassengerDTO> passengerTrips = passengerService.getPassengerTripsByUserId(usuarioId);
+
+        if (passengerTrips.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "No se encontraron viajes iniciados o por iniciar para este usuario");
+            return ResponseEntity.ok(response);
+        }
+
+        return ResponseEntity.ok(passengerTrips);
+    }
+
+    @DeleteMapping("/eliminar")
+    public ResponseEntity<?> removePassenger(
+            @RequestParam("usuarioId") long usuarioId,
+            @RequestParam("viajeId") long viajeId) {
+
+        try {
+            Map<String, Object> resultado = passengerService.removePassengerFromTrip(usuarioId, viajeId);
+            return ResponseEntity.ok(resultado);
+        } catch (RuntimeException ex) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception ex) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al eliminar al pasajero: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }
