@@ -14,4 +14,5 @@ public interface TripService {
     TripDTO iniciarViaje(Long tripId);
     TripDTO finalizarViaje(Long tripId);
     List<TripDTO> obtenerViajesPorConductorId(Long conductorId);
+    List<TripDTO> obtenerAlgunosViajes();
 }

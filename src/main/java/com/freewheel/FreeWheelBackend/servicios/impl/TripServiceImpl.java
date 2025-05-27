@@ -375,4 +375,20 @@ public class TripServiceImpl implements TripService {
                     .collect(Collectors.toList());
         }
     }
+
+    //Obtener algunos viajes
+    @Override
+    @Transactional(readOnly = true)
+    public List<TripDTO> obtenerAlgunosViajes() {
+        logger.debug("Obteniendo muestra de máximo 6 viajes");
+
+        // Buscar viajes en estado "por iniciar" y limitar a 6 resultados
+        List<TripEntity> viajes = tripRepository.findTop6ByEstadoOrderByFechaAscHoraInicioAsc("por iniciar");
+
+        logger.info("Se encontraron {} viajes de muestra", viajes.size());
+
+        return viajes.stream()
+                .map(this::mapToTripDTO)
+                .collect(Collectors.toList());
+    }
 }
