@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface TripRepository extends JpaRepository<TripEntity, Long>, JpaSpecificationExecutor<TripEntity> {
     List<TripEntity> findByConductorId(Long conductorId);
+    List<TripEntity> findTop6ByEstadoOrderByFechaAscHoraInicioAsc(String estado);
     Optional<TripEntity> findById(Long tripId);
 }

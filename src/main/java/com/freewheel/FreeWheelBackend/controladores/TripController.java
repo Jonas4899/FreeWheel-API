@@ -183,4 +183,24 @@ public class TripController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
+
+    @GetMapping("/algunos-viajes")
+    public ResponseEntity<?> obtenerAlgunosViajes() {
+        logger.info("Recibiendo solicitud para obtener muestra de algunos viajes");
+        try {
+            List<TripDTO> viajes = tripService.obtenerAlgunosViajes();
+
+            if (viajes.isEmpty()) {
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "No hay viajes disponibles actualmente");
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.ok(viajes);
+        } catch (Exception e) {
+            logger.error("Error al obtener muestra de viajes: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Error al obtener los viajes"));
+        }
+    }
 }

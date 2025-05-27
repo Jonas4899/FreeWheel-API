@@ -15,4 +15,5 @@ public interface TripService {
     TripDTO cancelarViajeConductor(Long tripId); // Nuevo metodo para cancelar un viaje un viaje
     TripDTO finalizarViaje(Long tripId);
     List<TripDTO> obtenerViajesPorConductorId(Long conductorId);
+    List<TripDTO> obtenerAlgunosViajes();
 }

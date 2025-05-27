@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,13 +47,24 @@ public class SolicitudReservaServiceImpl implements SolicitudReservaService {
     @Transactional(readOnly = true)
     public List<SolicitudReservaDTO> obtenerHistorialSolicitudesConductor(Long conductorId) {
         logger.debug("Obteniendo historial de solicitudes para el conductor con ID: {}", conductorId);
-        
+
         List<SolicitudReservaEntity> solicitudes = solicitudReservaRepository.findAllByConductorId(conductorId);
         logger.info("Se encontraron {} solicitudes para el conductor con ID: {}", solicitudes.size(), conductorId);
-        
-        return solicitudes.stream()
+
+        List<SolicitudReservaDTO> solicitudesDTO = solicitudes.stream()
                 .map(this::mapToSolicitudReservaDTO)
                 .collect(Collectors.toList());
+
+        // Ordenar por fecha del viaje (más cercana primero) y luego por hora de inicio
+        solicitudesDTO.sort(Comparator.comparing((SolicitudReservaDTO dto) -> {
+            TripDTO viaje = dto.getViaje();
+            return viaje != null ? viaje.getFecha() : null;
+        }).thenComparing((SolicitudReservaDTO dto) -> {
+            TripDTO viaje = dto.getViaje();
+            return viaje != null ? viaje.getHoraInicio() : null;
+        }));
+
+        return solicitudesDTO;
     }
 
     @Override

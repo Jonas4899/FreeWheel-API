@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -385,6 +386,10 @@ public class TripServiceImpl implements TripService {
             return new ArrayList<>();
         } else {
             logger.info("Se encontraron {} viajes para el usuario con ID: {}", viajes.size(), userId);
+
+            viajes.sort(Comparator.comparing(TripEntity::getFecha)
+                    .thenComparing(TripEntity::getHoraInicio));
+
             return viajes.stream()
                     .map(this::mapToTripDTO)
                     .collect(Collectors.toList());
@@ -401,9 +406,29 @@ public class TripServiceImpl implements TripService {
             return new ArrayList<>();
         } else {
             logger.info("Se encontraron {} viajes para el conductor con ID: {}", viajes.size(), conductorId);
+
+            viajes.sort(Comparator.comparing(TripEntity::getFecha)
+                    .thenComparing(TripEntity::getHoraInicio));
+
             return viajes.stream()
                     .map(this::mapToTripDTO)
                     .collect(Collectors.toList());
         }
+    }
+
+    //Obtener algunos viajes
+    @Override
+    @Transactional(readOnly = true)
+    public List<TripDTO> obtenerAlgunosViajes() {
+        logger.debug("Obteniendo muestra de máximo 6 viajes");
+
+        // Buscar viajes en estado "por iniciar" y limitar a 6 resultados
+        List<TripEntity> viajes = tripRepository.findTop6ByEstadoOrderByFechaAscHoraInicioAsc("por iniciar");
+
+        logger.info("Se encontraron {} viajes de muestra", viajes.size());
+
+        return viajes.stream()
+                .map(this::mapToTripDTO)
+                .collect(Collectors.toList());
     }
 }
