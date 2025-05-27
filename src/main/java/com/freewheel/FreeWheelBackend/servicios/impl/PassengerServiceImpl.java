@@ -196,7 +196,7 @@ public class PassengerServiceImpl implements PassengerService {
                 .filter(passenger -> {
                     TripEntity trip = tripRepository.findById(passenger.getViajeId()).orElse(null);
                     return trip != null &&
-                            trip.getEstado().equals("por iniciar") &&
+                            (trip.getEstado().equals("por iniciar") || trip.getEstado().equals("iniciado")) &&
                             (passenger.getEstado().equals("PENDIENTE") || passenger.getEstado().equals("ACEPTADO"));
                 })
                 .map(this::convertToDTO)
