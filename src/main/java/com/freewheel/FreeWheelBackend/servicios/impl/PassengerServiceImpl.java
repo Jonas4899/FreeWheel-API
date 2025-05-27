@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -191,7 +192,7 @@ public class PassengerServiceImpl implements PassengerService {
         List<PassengerEntity> passengerEntities = passengerRepository.findByUsuario_Id(userId);
 
         // Filtrar viajes por estado del viaje y estado del pasajero
-        return passengerEntities.stream()
+        List<PassengerDTO> passengerDTOs = passengerEntities.stream()
                 .filter(passenger -> {
                     TripEntity trip = tripRepository.findById(passenger.getViajeId()).orElse(null);
                     return trip != null &&
@@ -200,6 +201,17 @@ public class PassengerServiceImpl implements PassengerService {
                 })
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+
+        // Ordenar por fecha (más cercana primero) y luego por hora de inicio
+        passengerDTOs.sort(Comparator.comparing((PassengerDTO dto) -> {
+            TripDTO trip = dto.getViaje();
+            return trip != null ? trip.getFecha() : null;
+        }).thenComparing((PassengerDTO dto) -> {
+            TripDTO trip = dto.getViaje();
+            return trip != null ? trip.getHoraInicio() : null;
+        }));
+
+        return passengerDTOs;
     }
 
     //Eliminar un pasajero
